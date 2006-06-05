@@ -33,6 +33,21 @@ arguments:
 
 =item * store
 
+A Data::Hive::Store object, or an object that implements its
+C<< get >>, C<< set >>, and C<< name >> methods.
+
+=item * store_class
+
+Class to instantiate C<< $store >> from.  The classname will
+have 'Data::Hive::Store::' prepended; to avoid this, prefix
+it with a '+' ('+My::Store').  Mutually exclusive with the C<<
+store >> option.
+
+=item * store_args
+
+Arguments to instantiate C<< $store >> with.  Mutually
+exclusive with the C<< store >> option.
+
 =back
 
 =cut
@@ -42,15 +57,32 @@ sub NEW {
   $arg ||= {};
   $arg->{path} ||= [];
   my $self = bless $arg => ref($class) || $class;
+
+  if ($self->{store_class} and $self->{store_args}) {
+    die "don't use 'store' with 'store_class' and 'store_args'" if $self->{store};
+    $self->{store_class} = "Data::Hive::Store::$self->{store_class}"
+      unless $self->{store_class} =~ s/^\+//;
+    $self->{store} = $self->{store_class}->new(@{ $self->{store_args} });
+    delete @{$self}{qw(store_class store_args)};
+  }
+
+  return $self;
 }
 
 =head2 GET
 
+Retrieve the value represented by this object's path from the store.
+
+=head2 GETNUM
+
+Soley for Perl 5.6.1 compatability, where returning undef
+from overloaded numification causes a segfault.
+
 =cut
 
 use overload (
-  q{""} => 'GET',
-  q{0+} => 'GET',
+  q{""}    => 'GET',
+  q{0+}    => 'GETNUM',
   fallback => 1,
 );
 
@@ -58,6 +90,8 @@ sub GET {
   my $self = shift;
   return $self->{store}->get($self->{path});
 }
+
+sub GETNUM { shift->GET || 0 }
 
 =head2 SET
 
@@ -148,80 +182,5 @@ This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
 =cut
-
-package Data::Hive::Store::Hash;
-
-sub new {
-  my ($class, $hash) = @_;
-  return bless \$hash => $class;
-}
-
-sub get {
-  my ($self, $path) = @_;
-  my $hash = $$self;
-  while (@$path) {
-    my $seg = shift @$path;
-    return unless exists $hash->{$seg};
-    $hash = $hash->{$seg};
-  }
-  return $hash;
-}
-
-sub set {
-  my ($self, $path, $key) = @_;
-  my $hash = $$self;
-  while (@$path > 1) {
-    my $seg = shift @$path;
-    if (exists $hash->{$seg} and not ref $hash->{$seg}) {
-      die "can't overwrite existing non-ref value: '$hash->{$seg}'"
-    }
-    $hash = $hash->{$seg} ||= {};
-  }
-  $hash->{$path->[0]} = $key;
-}
-
-sub name {
-  my ($self, $path) = @_;
-  return join '->', '$store', map { "{$_}" } @$path;
-}
-
-package Data::Hive::Store::Accountinfo;
-
-sub _escape {
-  my $str = shift;
-  $str =~ s/\./\\./g;
-  return $str;
-}
-
-sub _unescape {
-  my $str = shift;
-  $str =~ s/\\\././g;
-  return $str;
-}
-
-sub _path {
-  my $path = shift;
-  return join '.', map { _escape($_) } @$path;
-}
-
-sub new {
-  my ($class, $account) = @_;
-  return bless \$account => $class;
-}
-
-sub get {
-  my ($self, $path) = @_;
-  return $$self->info(_path($path));
-}
-
-sub set {
-  my ($self, $path, $val) = @_;
-  return $$self->info(_path($path) => $val);
-}
- 
-sub name {
-  my ($self, $path) = @_;
-  return _path($path);
-}
 
 1; # End of Data::Hive

@@ -9,5 +9,7 @@ all_from;
 build_requires 'Test::More' => 0;
 build_requires 'Test::use::ok' => 0;
 
+requires 'Carp::Clan' => 0;
+
 auto_install;
 WriteAll;
