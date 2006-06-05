@@ -48,6 +48,12 @@ sub NEW {
 
 =cut
 
+use overload (
+  q{""} => 'GET',
+  q{0+} => 'GET',
+  fallback => 1,
+);
+
 sub GET {
   my $self = shift;
   return $self->{store}->get($self->{path});
@@ -177,6 +183,45 @@ sub set {
 sub name {
   my ($self, $path) = @_;
   return join '->', '$store', map { "{$_}" } @$path;
+}
+
+package Data::Hive::Store::Accountinfo;
+
+sub _escape {
+  my $str = shift;
+  $str =~ s/\./\\./g;
+  return $str;
+}
+
+sub _unescape {
+  my $str = shift;
+  $str =~ s/\\\././g;
+  return $str;
+}
+
+sub _path {
+  my $path = shift;
+  return join '.', map { _escape($_) } @$path;
+}
+
+sub new {
+  my ($class, $account) = @_;
+  return bless \$account => $class;
+}
+
+sub get {
+  my ($self, $path) = @_;
+  return $$self->info(_path($path));
+}
+
+sub set {
+  my ($self, $path, $val) = @_;
+  return $$self->info(_path($path) => $val);
+}
+ 
+sub name {
+  my ($self, $path) = @_;
+  return _path($path);
 }
 
 1; # End of Data::Hive
