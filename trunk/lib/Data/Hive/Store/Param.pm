@@ -63,6 +63,12 @@ sub _path {
   return join $self->{separator}, map { $self->_escape($_) } @$path;
 }
 
+=head2 new
+
+  my $store = Data::Hive::Store::Param->new($obj, \%arg);
+
+=cut
+
 sub new {
   my ($class, $obj, $arg) = @_;
   $arg              ||= {};
@@ -80,15 +86,34 @@ sub _param {
   return $self->{obj}->$meth($path, @_);
 }
 
+=head2 get
+
+Join the path together with the C<< separator >> and get it
+from the object.
+
+=cut
+
 sub get {
   my ($self, $path) = @_;
   return $self->_param($path);
 }
 
+=head2 set
+
+See L</get>.
+
+=cut
+
 sub set {
   my ($self, $path, $val) = @_;
   return $self->_param($path => $val);
 }
+
+=head2 name
+
+Join path together with C<< separator >> and return it.
+
+=cut
  
 sub name {
   my ($self, $path) = @_;
