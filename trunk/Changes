@@ -1,6 +1,8 @@
 Revision history for Data-Hive
 
-0.01    2006-06-05
+0.02    2006-06-08
+        Add EXISTS.
 
+0.01    2006-06-05
         First version, released on an unsuspecting world.
 
