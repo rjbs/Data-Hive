@@ -18,10 +18,20 @@ $obj->mock(
     return $param->{$key};
   },
 );
+$obj->mock(
+  info_exists => sub {
+    my (undef, $key) = @_;
+    return exists $param->{$key};
+  }
+);
 
 my $hive = Data::Hive->NEW({
   store_class => 'Param',
-  store_args  => [ $obj, { method => 'info', separator => '/' } ],
+  store_args  => [ $obj, {
+    method => 'info',
+    separator => '/',
+    exists => sub { $obj->info_exists(shift) },
+  } ],
 });
 
 %$param = (
@@ -34,3 +44,6 @@ $hive->foo->SET(3);
 is_deeply $param, { foo => 3, 'bar/baz' => 2 }, 'SET';
 
 is $hive->bar->baz->NAME, 'bar/baz', 'NAME';
+
+ok ! $hive->not->EXISTS, "non-existent key doesn't EXISTS";
+ok   $hive->foo->EXISTS, "existing key does EXISTS";

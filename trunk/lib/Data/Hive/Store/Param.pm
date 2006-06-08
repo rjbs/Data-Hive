@@ -47,6 +47,12 @@ String to join path segments together with; defaults to
 either the first character of the C<< escape >> option (if
 given) or '.'.
 
+=item * exists
+
+Coderef that describes how to see if a given parameter name
+(C<< separator >>-joined path) exists.  The default is to
+treat the object like a hashref and look inside it.
+
 =back
 
 =cut
@@ -75,6 +81,7 @@ sub new {
   $arg->{escape}    ||= $arg->{separator} || '.';
   $arg->{separator} ||= substr($arg->{escape}, 0, 1);
   $arg->{method}    ||= 'param';
+  $arg->{exists}    ||= sub { exists $obj->{shift()} };
   $arg->{obj}         = $obj;
   return bless { %$arg } => $class;
 }
@@ -118,6 +125,17 @@ Join path together with C<< separator >> and return it.
 sub name {
   my ($self, $path) = @_;
   return $self->_path($path);
+}
+
+=head2 exists
+
+Return true if the C<< name >> of this hive is a parameter.
+
+=cut
+
+sub exists {
+  my ($self, $path) = @_;
+  return $self->{exists}->($self->_path($path));
 }
 
 1;

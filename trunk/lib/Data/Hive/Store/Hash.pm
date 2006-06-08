@@ -39,20 +39,40 @@ sub _die {
   croak(shift);
 }
 
+my $BREAK = "BREAK\n";
+my $LAST = "LAST\n";
+
+sub _descend {
+  my ($self, $path, $arg) = @_;
+  $arg ||= {};
+  $arg->{step} or die "step is required";
+  $arg->{cond} ||= sub { @{ shift() } };
+  $arg->{end}  ||= sub { $_[0] };
+
+  my $node = $$self;
+  while ($arg->{cond}->($path)) {
+    my $seg = shift @$path;
+    eval { $arg->{step}->($seg, $node, $path) };
+    return if $@ and $@ eq $BREAK;
+    die $@ if $@;
+    $node = $node->{$seg} ||= {};
+  }
+  return $arg->{end}->($node, $path);
+}
+
 sub get {
   my ($self, $path) = @_;
-  my $hash = $$self;
-  while (@$path) {
-    my $seg = shift @$path;
-    if (defined $hash and not ref $hash) {
-      _die("can't get key '$seg' of non-ref value '$hash'");
+  return $self->_descend(
+    $path, {
+      step => sub {
+        my ($seg, $node) = @_;
+        if (defined $node and not ref $node) {
+          _die("can't get key '$seg' of non-ref value '$node'");
+        }
+        die $BREAK unless exists $node->{$seg};
+      }
     }
-    unless (exists $hash->{$seg}) {
-      return;
-    }
-    $hash = $hash->{$seg};
-  }
-  return $hash;
+  );
 }
 
 =head2 set
@@ -66,16 +86,22 @@ existing non-hashref key, e.g.:
 =cut
 
 sub set {
-  my ($self, $path, $key) = @_;
-  my $hash = $$self;
-  while (@$path > 1) {
-    my $seg = shift @$path;
-    if (exists $hash->{$seg} and not ref $hash->{$seg}) {
-      _die("can't overwrite existing non-ref value: '$hash->{$seg}'");
-    }
-    $hash = $hash->{$seg} ||= {};
-  }
-  $hash->{$path->[0]} = $key;
+  my ($self, $path, $value) = @_;
+  return $self->_descend(
+    $path, {
+      step => sub {
+        my ($seg, $node, $path) = @_;
+        if (exists $node->{$seg} and not ref $node->{$seg}) {
+          _die("can't overwrite existing non-ref value: '$node->{$seg}'");
+        }
+      },
+      cond => sub { @{ shift() } > 1 },
+      end => sub {
+        my ($node, $path) = @_;
+        $node->{$path->[0]} = $value;
+      },
+    },
+  );
 }
 
 =head2 name
@@ -94,5 +120,24 @@ sub name {
   my ($self, $path) = @_;
   return join '->', '$STORE', map { "{'$_'}" } @$path;
 }
+
+=head2 exists
+
+Descend the hash and return false if any of the path's parts
+do not exist, or true if they all do.
+
+=cut
+
+sub exists {
+  my ($self, $path) = @_;
+  return $self->_descend(
+    $path, { 
+      step => sub {
+        my ($seg, $node) = @_;
+        die $BREAK unless exists $node->{$seg};
+      },
+    },
+  );
+}  
 
 1;

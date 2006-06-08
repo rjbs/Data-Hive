@@ -37,3 +37,6 @@ like $@, qr/can't get key 'bar'/, "error on wrongly nested get";
 
 eval { $hive->foo->bar->SET(3) };
 like $@, qr/overwrite existing non-ref/, "error on wrongly nested set";
+
+ok ! $hive->not->EXISTS, "non-existent key doesn't EXISTS";
+ok   $hive->foo->EXISTS, "existing key does EXISTS";

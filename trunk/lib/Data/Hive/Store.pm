@@ -49,10 +49,16 @@ independently of the hive; in the C<< io >> example above,
 some external process/function may want to write to C<<
 /foo/bar >> directly.
 
+=head2 exists
+
+  if ($store->exists(\@path, \%opt)) { ... }
+
+Returns true if the given path exists in the store.
+
 =cut
 
 BEGIN {
-  for my $meth (qw(get set name)) {
+  for my $meth (qw(get set name exists)) {
     no strict 'refs';
     *$meth = sub { require Carp; Carp::croak("$_[0] does not implement $meth") };
   }
