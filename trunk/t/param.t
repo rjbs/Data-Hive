@@ -30,7 +30,7 @@ my $hive = Data::Hive->NEW({
   store_args  => [ $obj, {
     method => 'info',
     separator => '/',
-    exists => sub { $obj->info_exists(shift) },
+    exists => 'info_exists',
   } ],
 });
 

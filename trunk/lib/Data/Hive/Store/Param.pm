@@ -135,7 +135,9 @@ Return true if the C<< name >> of this hive is a parameter.
 
 sub exists {
   my ($self, $path) = @_;
-  return $self->{exists}->($self->_path($path));
+  my $code = $self->{exists};
+  my $key = $self->_path($path);
+  return ref($code) ? $code->($key) : $self->{obj}->$code($key);
 }
 
 1;
