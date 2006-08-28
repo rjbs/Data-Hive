@@ -1,5 +1,9 @@
 Revision history for Data-Hive
 
+0.040   2006-08-28
+
+        Freshen Module::Install
+
 0.03    2006-07-03
         Add missing dep for Test::MockObject.
 
