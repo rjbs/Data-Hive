@@ -1,5 +1,8 @@
 Revision history for Data-Hive
 
+x.xxx   xxxx-xx-xx
+        add GETSTR to avoid stupid SEGVs
+
 0.040   2006-08-28
 
         Freshen Module::Install

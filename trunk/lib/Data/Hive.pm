@@ -9,11 +9,11 @@ Data::Hive - convenient access to hierarchical data
 
 =head1 VERSION
 
-Version 0.040
+Version 0.040_01
 
 =cut
 
-our $VERSION = '0.040';
+our $VERSION = '0.040_01';
 
 =head1 SYNOPSIS
 
@@ -92,13 +92,15 @@ Retrieve the value represented by this object's path from the store.
 
 =head2 GETNUM
 
-Soley for Perl 5.6.1 compatability, where returning undef
-from overloaded numification causes a segfault.
+=head2 GETSTR
+
+Soley for Perl 5.6.1 compatability, where returning undef from overloaded
+numification/stringification can cause a segfault.
 
 =cut
 
 use overload (
-  q{""}    => 'GET',
+  q{""}    => 'GETSTR',
   q{0+}    => 'GETNUM',
   fallback => 1,
 );
@@ -109,6 +111,11 @@ sub GET {
 }
 
 sub GETNUM { shift->GET || 0 }
+
+sub GETSTR {
+  my $rv = shift->GET;
+  return defined($rv) ? $rv : '';
+}
 
 =head2 SET
 
