@@ -140,4 +140,27 @@ sub exists {
   );
 }  
 
+=head2 delete
+
+Descend the hash and delete the given path.  Only deletes the leaf.
+
+=cut
+
+sub delete {
+  my ($self, $path) = @_;
+  return $self->_descend(
+    $path, {
+      step => sub {
+        my ($seg, $node) = @_;
+        die $BREAK unless exists $node->{$seg};
+      },
+      cond => sub { @{ shift() } > 1 },
+      end  => sub {
+        my ($node, $path) = @_;
+        delete $node->{$path->[0]};
+      },
+    },
+  );
+}
+
 1;

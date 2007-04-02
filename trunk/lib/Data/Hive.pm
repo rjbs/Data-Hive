@@ -9,11 +9,11 @@ Data::Hive - convenient access to hierarchical data
 
 =head1 VERSION
 
-Version 0.040_01
+Version 0.050
 
 =cut
 
-our $VERSION = '0.040_01';
+our $VERSION = '0.050';
 
 =head1 SYNOPSIS
 
@@ -39,6 +39,8 @@ name and pass it the hive's path:
 =item * SET
 
 =item * NAME
+
+=item * DELETE
 
 =back
 
@@ -184,6 +186,22 @@ the store.
 sub EXISTS {
   my $self = shift;
   return $self->{store}->exists($self->{path});
+}
+
+=head2 DELETE
+
+  $hive->foo->bar->DELETE;
+
+Delete the value represented by this hive from the store.  Returns the previous
+value, if any.
+
+Throw an exception if the given store can't delete items for some reason.
+
+=cut
+
+sub DELETE {
+  my $self = shift;
+  return $self->{store}->delete($self->{path});
 }
 
 =head1 AUTHOR

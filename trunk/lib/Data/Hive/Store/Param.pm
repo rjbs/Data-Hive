@@ -53,6 +53,11 @@ Coderef that describes how to see if a given parameter name
 (C<< separator >>-joined path) exists.  The default is to
 treat the object like a hashref and look inside it.
 
+=item * delete
+
+Coderef that describes how to delete a given parameter name.  The default is to
+treat the object like a hashref and call C<delete> on it.
+
 =back
 
 =cut
@@ -60,7 +65,7 @@ treat the object like a hashref and look inside it.
 sub _escape {
   my ($self, $str) = @_;
   my $escape = $self->{escape} or return $str;
-  $str =~ s/([$escape])/\\$1/g;
+  $str =~ s/([\Q$escape\E%])/sprintf("%%%x", ord($1))/ge;
   return $str;
 }
 
@@ -82,6 +87,7 @@ sub new {
   $arg->{separator} ||= substr($arg->{escape}, 0, 1);
   $arg->{method}    ||= 'param';
   $arg->{exists}    ||= sub { exists $obj->{shift()} };
+  $arg->{delete}    ||= sub { delete $obj->{shift()} };
   $arg->{obj}         = $obj;
   return bless { %$arg } => $class;
 }
@@ -136,6 +142,19 @@ Return true if the C<< name >> of this hive is a parameter.
 sub exists {
   my ($self, $path) = @_;
   my $code = $self->{exists};
+  my $key = $self->_path($path);
+  return ref($code) ? $code->($key) : $self->{obj}->$code($key);
+}
+
+=head2 delete
+
+Delete the entry for the C<< name >> of this hive and return its old value.
+
+=cut
+
+sub delete {
+  my ($self, $path) = @_;
+  my $code = $self->{delete};
   my $key = $self->_path($path);
   return ref($code) ? $code->($key) : $self->{obj}->$code($key);
 }

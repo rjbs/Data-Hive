@@ -55,10 +55,16 @@ some external process/function may want to write to C<<
 
 Returns true if the given path exists in the store.
 
+=head2 delete
+
+  $store->delete(\@path, \%opt);
+
+Delete the given path from the store.  Return the previous value, if any.
+
 =cut
 
 BEGIN {
-  for my $meth (qw(get set name exists)) {
+  for my $meth (qw(get set name exists delete)) {
     no strict 'refs';
     *$meth = sub { require Carp; Carp::croak("$_[0] does not implement $meth") };
   }

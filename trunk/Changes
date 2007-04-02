@@ -1,7 +1,8 @@
 Revision history for Data-Hive
 
-x.xxx   xxxx-xx-xx
-        add GETSTR to avoid stupid SEGVs
+0.050   2007-04-02
+        Add GETSTR to avoid stupid SEGVs
+        Add DELETE
 
 0.040   2006-08-28
 
