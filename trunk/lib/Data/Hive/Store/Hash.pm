@@ -52,7 +52,10 @@ sub _descend {
   my $node = $$self;
   while ($arg->{cond}->($path)) {
     my $seg = shift @$path;
-    eval { $arg->{step}->($seg, $node, $path) };
+    {
+      local $SIG{__DIE__};
+      eval { $arg->{step}->($seg, $node, $path) };
+    }
     return if $@ and $@ eq $BREAK;
     die $@ if $@;
     $node = $node->{$seg} ||= {};

@@ -8,7 +8,6 @@ lib/Data/Hive/Store.pm
 lib/Data/Hive/Store/Hash.pm
 lib/Data/Hive/Store/Param.pm
 t/00-load.t
-t/boilerplate.t
 t/pod-coverage.t
 t/pod.t
 t/hash.t

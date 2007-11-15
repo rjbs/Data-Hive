@@ -1,5 +1,11 @@
 Revision history for Data-Hive
 
+0.051   2007-11-15
+        Guard eval with local $SIG{__DIE__} in case someone else has been
+        careless with theirs
+
+        Remove useless t/boilerplate.t
+
 0.050   2007-04-02
         Add GETSTR to avoid stupid SEGVs
         Add DELETE
