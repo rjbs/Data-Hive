@@ -9,11 +9,11 @@ Data::Hive - convenient access to hierarchical data
 
 =head1 VERSION
 
-Version 0.051
+Version 0.052
 
 =cut
 
-our $VERSION = '0.051';
+our $VERSION = '0.052';
 
 =head1 SYNOPSIS
 

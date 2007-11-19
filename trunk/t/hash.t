@@ -41,7 +41,9 @@ like $@, qr/overwrite existing non-ref/, "error on wrongly nested set";
 ok ! $hive->not->EXISTS, "non-existent key doesn't EXISTS";
 ok   $hive->foo->EXISTS, "existing key does EXISTS";
 
-is $hive->baz->quux->DELETE, 2, "delete returned old value";
+my $quux = $hive->baz->quux;
+is $quux->GET, 2, "get from saved leaf";
+is $quux->DELETE, 2, "delete returned old value";
 is_deeply($store, {
   foo => 1,
   baz => { },

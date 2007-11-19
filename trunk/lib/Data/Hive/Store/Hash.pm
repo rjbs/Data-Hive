@@ -44,23 +44,24 @@ my $LAST = "LAST\n";
 
 sub _descend {
   my ($self, $path, $arg) = @_;
+  my @path = @$path;
   $arg ||= {};
   $arg->{step} or die "step is required";
   $arg->{cond} ||= sub { @{ shift() } };
   $arg->{end}  ||= sub { $_[0] };
 
   my $node = $$self;
-  while ($arg->{cond}->($path)) {
-    my $seg = shift @$path;
+  while ($arg->{cond}->(\@path)) {
+    my $seg = shift @path;
     {
       local $SIG{__DIE__};
-      eval { $arg->{step}->($seg, $node, $path) };
+      eval { $arg->{step}->($seg, $node, \@path) };
     }
     return if $@ and $@ eq $BREAK;
     die $@ if $@;
     $node = $node->{$seg} ||= {};
   }
-  return $arg->{end}->($node, $path);
+  return $arg->{end}->($node, \@path);
 }
 
 sub get {

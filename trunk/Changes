@@ -1,5 +1,9 @@
 Revision history for Data-Hive
 
+0.052   2007-11-19
+        Fix bug where Store::Hash was inadvertently destroying state
+        information it shouldn't have in some cases
+
 0.051   2007-11-15
         Guard eval with local $SIG{__DIE__} in case someone else has been
         careless with theirs
