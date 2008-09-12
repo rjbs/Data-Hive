@@ -90,7 +90,13 @@ sub NEW {
 
 =head2 GET
 
-Retrieve the value represented by this object's path from the store.
+Retrieve the value represented by this object's path from the store.  If an
+argument is passed, and the value of the entry is undef, the passed value is
+returned.
+
+  $hive->some->path->GET(10);
+
+The above will either returned the stored, defined value or 10.
 
 =head2 GETNUM
 
@@ -108,14 +114,15 @@ use overload (
 );
 
 sub GET {
-  my $self = shift;
-  return $self->{store}->get($self->{path});
+  my ($self, $default) = @_;
+  my $value = $self->{store}->get($self->{path});
+  return defined $value ? $value : $default;
 }
 
-sub GETNUM { shift->GET || 0 }
+sub GETNUM { shift->GET(@_) || 0 }
 
 sub GETSTR {
-  my $rv = shift->GET;
+  my $rv = shift->GET(@_);
   return defined($rv) ? $rv : '';
 }
 
