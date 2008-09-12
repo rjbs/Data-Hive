@@ -1,5 +1,8 @@
 Revision history for Data-Hive
 
+0.053   2008-09-12
+        ->GET($default) added
+
 0.052   2007-11-19
         Fix bug where Store::Hash was inadvertently destroying state
         information it shouldn't have in some cases
