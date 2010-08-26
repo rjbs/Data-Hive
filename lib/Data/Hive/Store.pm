@@ -1,11 +1,9 @@
-package Data::Hive::Store;
-
 use strict;
 use warnings;
+package Data::Hive::Store;
+# ABSTRACT - a backend storage driver for Data::Hive
 
-=head1 NAME
-
-Data::Hive::Store
+use Carp ();
 
 =head1 DESCRIPTION
 
@@ -14,24 +12,14 @@ for Data::Hive.
 
 =head1 METHODS
 
-All methods are passed at least a 'path' (arrayref of
-namespace pieces).  Joining the path in a way that is
-meaningful is most of the point of the Store modules.
+All methods are passed at least a 'path' (arrayref of namespace pieces).  Store
+classes exist to operate on the entities found at named paths.
 
 =head2 get
 
   print $store->get(\@path, \%opt);
 
-Return the resource represented by the given path, however
-C<< $store >> is structured.  This could map to e.g.
-
-  $hash->{foo}->{bar}
-
-  $obj->get('foo.bar')
-
-  io('/foo/bar')->all
-
-depending on the Store module involved.
+Return the resource represented by the given path.
 
 =head2 set
 
@@ -43,11 +31,8 @@ Analogous to C<< get >>.
 
   print $store->name(\@path, \%opt);
 
-Return a store-specific name for the given path.  This is
-primarily useful for stores that may be accessed
-independently of the hive; in the C<< io >> example above,
-some external process/function may want to write to C<<
-/foo/bar >> directly.
+Return a store-specific name for the given path.  This is primarily useful for
+stores that may be accessed independently of the hive.
 
 =head2 exists
 
@@ -61,12 +46,36 @@ Returns true if the given path exists in the store.
 
 Delete the given path from the store.  Return the previous value, if any.
 
+=head2 keys
+
+  my @keys = $store->keys(\@path, \%opt);
+
+This returns a list of next-level path elements that exist.  For example, given
+a hive with values for the following paths:
+
+  foo
+  foo/bar
+  foo/bar/baz
+  foo/xyz/abc
+  foo/xyz/def
+  foo/123
+
+This shows the expected results:
+
+  keys of      | returns
+  -------------+------------
+  foo          | bar, xyz, 123
+  foo/bar      | baz
+  foo/bar/baz  |
+  foo/xyz      | abc, def
+  foo/123      |
+
 =cut
 
 BEGIN {
-  for my $meth (qw(get set name exists delete)) {
+  for my $meth (qw(get set name exists delete keys)) {
     no strict 'refs';
-    *$meth = sub { require Carp; Carp::croak("$_[0] does not implement $meth") };
+    *$meth = sub { Carp::croak("$_[0] does not implement $meth") };
   }
 }
 

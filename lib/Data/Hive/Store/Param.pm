@@ -1,19 +1,9 @@
-package Data::Hive::Store::Param;
-
 use strict;
 use warnings;
+package Data::Hive::Store::Param;
+# ABSTRACT: CGI::param-like store for Data::Hive
 
-=head1 NAME
-
-Data::Hive::Store::Param
-
-=head1 DESCRIPTION
-
-CGI-like param() store for Data::Hive.
-
-=head1 METHODS
-
-=head2 new
+=method new
 
   # use default method name 'param'
   my $store = Data::Hive::Store::Param->new($obj);
@@ -24,41 +14,40 @@ CGI-like param() store for Data::Hive.
   # escape certain characters in keys
   my $store = Data::Hive::Store::Param->new($obj, { escape => './!' });
 
-Return a new param() store.
+Return a new Param store.
 
-Several interesting arguments can be passed in a hashref
-after the first (mandatory) object argument.
+Several interesting arguments can be passed in a hashref after the first
+(mandatory) object argument.
 
-=over 
+=begin :list 
 
-=item * method
+= method
 
 Use a different method name on the object (default is 'param').
 
-=item * escape
+= escape
 
 List of characters to escape (prepend '\' to) in keys.
 
 Defaults to the C<< separator >>.
 
-=item * separator
+= separator
 
-String to join path segments together with; defaults to
-either the first character of the C<< escape >> option (if
-given) or '.'.
+String to join path segments together with; defaults to either the first
+character of the C<< escape >> option (if given) or '.'.
 
-=item * exists
+= exists
 
-Coderef that describes how to see if a given parameter name
-(C<< separator >>-joined path) exists.  The default is to
-treat the object like a hashref and look inside it.
+Coderef that describes how to see if a given parameter name (C<< separator
+>>-joined path) exists.  The default is to treat the object like a hashref and
+look inside it.
 
-=item * delete
+= delete
 
 Coderef that describes how to delete a given parameter name.  The default is to
 treat the object like a hashref and call C<delete> on it.
 
-=back
+=end :list
 
 =cut
 
@@ -73,12 +62,6 @@ sub _path {
   my ($self, $path) = @_;
   return join $self->{separator}, map { $self->_escape($_) } @$path;
 }
-
-=head2 new
-
-  my $store = Data::Hive::Store::Param->new($obj, \%arg);
-
-=cut
 
 sub new {
   my ($class, $obj, $arg) = @_;
@@ -99,10 +82,9 @@ sub _param {
   return $self->{obj}->$meth($path, @_);
 }
 
-=head2 get
+=method get
 
-Join the path together with the C<< separator >> and get it
-from the object.
+Join the path together with the C<< separator >> and get it from the object.
 
 =cut
 
@@ -111,7 +93,7 @@ sub get {
   return $self->_param($path);
 }
 
-=head2 set
+=method set
 
 See L</get>.
 
@@ -122,7 +104,7 @@ sub set {
   return $self->_param($path => $val);
 }
 
-=head2 name
+=method name
 
 Join path together with C<< separator >> and return it.
 
@@ -133,7 +115,7 @@ sub name {
   return $self->_path($path);
 }
 
-=head2 exists
+=method exists
 
 Return true if the C<< name >> of this hive is a parameter.
 
@@ -146,7 +128,7 @@ sub exists {
   return ref($code) ? $code->($key) : $self->{obj}->$code($key);
 }
 
-=head2 delete
+=method delete
 
 Delete the entry for the C<< name >> of this hive and return its old value.
 

@@ -1,19 +1,13 @@
-package Data::Hive::Store::Hash;
-
 use strict;
 use warnings;
-
-=head1 NAME
-
-Data::Hive::Store::Hash
+package Data::Hive::Store::Hash;
+# ABSTRACT: store a hive in nested hashrefs
 
 =head1 DESCRIPTION
 
 Simple hash store for Data::Hive.
 
-=head1 METHODS
-
-=head2 new
+=method new
 
   my $store = Data::Hive::Store::Hash->new(\%hash);
 
@@ -26,10 +20,9 @@ sub new {
   return bless \$hash => $class;
 }
 
-=head2 get
+=method get
 
-Use given C<< \@path >> as nesting keys in the hashref
-store.
+Use given C<< \@path >> as nesting keys in the hashref store.
 
 =cut
 
@@ -53,14 +46,17 @@ sub _descend {
   my $node = $$self;
   while ($arg->{cond}->(\@path)) {
     my $seg = shift @path;
+
     {
       local $SIG{__DIE__};
       eval { $arg->{step}->($seg, $node, \@path) };
     }
+
     return if $@ and $@ eq $BREAK;
     die $@ if $@;
     $node = $node->{$seg} ||= {};
   }
+
   return $arg->{end}->($node, \@path);
 }
 
@@ -79,10 +75,10 @@ sub get {
   );
 }
 
-=head2 set
+=method set
 
-See L</get>.  Dies if you try to set a key underneath an
-existing non-hashref key, e.g.:
+See C<L</get>>.  Dies if you try to set a key underneath an existing
+non-hashref key, e.g.:
 
   $hash = { foo => 1 };
   $store->set([ 'foo', 'bar' ], 2); # dies
@@ -100,7 +96,7 @@ sub set {
         }
       },
       cond => sub { @{ shift() } > 1 },
-      end => sub {
+      end  => sub {
         my ($node, $path) = @_;
         $node->{$path->[0]} = $value;
       },
@@ -108,11 +104,10 @@ sub set {
   );
 }
 
-=head2 name
+=method name
 
-Returns a string, potentially suitable for eval-ing,
-describing a hash dereference of a variable called C<<
-$STORE >>.
+Returns a string, potentially suitable for eval-ing, describing a hash
+dereference of a variable called C<< $STORE >>.
 
   "$STORE->{foo}->{bar}"
 
@@ -125,10 +120,10 @@ sub name {
   return join '->', '$STORE', map { "{'$_'}" } @$path;
 }
 
-=head2 exists
+=method exists
 
-Descend the hash and return false if any of the path's parts
-do not exist, or true if they all do.
+Descend the hash and return false if any of the path's parts do not exist, or
+true if they all do.
 
 =cut
 
@@ -144,7 +139,7 @@ sub exists {
   );
 }  
 
-=head2 delete
+=method delete
 
 Descend the hash and delete the given path.  Only deletes the leaf.
 

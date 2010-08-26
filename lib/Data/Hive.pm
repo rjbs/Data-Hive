@@ -1,27 +1,17 @@
-package Data::Hive;
-
-use warnings;
 use strict;
+use warnings;
+package Data::Hive;
+# ABSTRACT: convenient access to hierarchical data
 
-=head1 NAME
-
-Data::Hive - convenient access to hierarchical data
-
-=head1 VERSION
-
-Version 0.053
-
-=cut
-
-our $VERSION = '0.053';
+use Carp ();
 
 =head1 SYNOPSIS
 
-    use Data::Hive;
+  use Data::Hive;
 
-    my $hive = Data::Hive->NEW(\%arg);
-    print $hive->foo->bar->baz;
-    $hive->foo->bar->quux->SET(17);
+  my $hive = Data::Hive->NEW(\%arg);
+  print $hive->foo->bar->baz;
+  $hive->foo->bar->quux->SET(17);
 
 =head1 METHODS
 
@@ -30,59 +20,66 @@ Data::Hive::Store subclasses.  These methods all basically
 call a method on the store with the same (but lowercased)
 name and pass it the hive's path:
 
-=over
-
-=item * EXISTS
-
-=item * GET
-
-=item * SET
-
-=item * NAME
-
-=item * DELETE
-
-=back
+=for :list
+* EXISTS
+* GET
+* SET
+* NAME
+* DELETE
 
 =head2 NEW
 
 arguments:
 
-=over
+=begin :list
 
-=item * store
+= store
 
-A Data::Hive::Store object, or an object that implements its
-C<< get >>, C<< set >>, and C<< name >> methods.
+A Data::Hive::Store object, or an object that implements the required methods.
+Those are:
 
-=item * store_class
+=for :list
+* C<get>
+* C<set>
+* C<name>
+* C<exists>
+* C<delete>
 
-Class to instantiate C<< $store >> from.  The classname will
-have 'Data::Hive::Store::' prepended; to avoid this, prefix
-it with a '+' ('+My::Store').  Mutually exclusive with the C<<
+= store_class
+
+Class to instantiate C<< $store >> from.  The classname will have
+C<Data::Hive::Store::> prepended; to avoid this, prefix it with a '='
+(C<=My::Store>).  Mutually exclusive with the C<< store >> option.
+
+A plus sign can be used instead of an equal sign, for historical reasons.
+
+= store_args
+
+Arguments to instantiate C<< $store >> with.  Mutually exclusive with the C<<
 store >> option.
 
-=item * store_args
-
-Arguments to instantiate C<< $store >> with.  Mutually
-exclusive with the C<< store >> option.
-
-=back
+=end :list
 
 =cut
 
 sub NEW {
   my ($class, $arg) = @_;
   $arg ||= {};
-  $arg->{path} ||= [];
-  my $self = bless $arg => ref($class) || $class;
 
-  if ($self->{store_class} and $self->{store_args}) {
-    die "don't use 'store' with 'store_class' and 'store_args'" if $self->{store};
-    $self->{store_class} = "Data::Hive::Store::$self->{store_class}"
-      unless $self->{store_class} =~ s/^\+//;
-    $self->{store} = $self->{store_class}->new(@{ $self->{store_args} });
-    delete @{$self}{qw(store_class store_args)};
+  my @path = @{ $arg->{path} || [] };
+
+  my $self = bless { path => \@path } => ref($class) || $class;
+
+  if ($arg->{store_class} and $arg->{store_args}) {
+    die "don't use 'store' with 'store_class' and 'store_args'"
+      if $arg->{store};
+
+    $arg->{store_class} = "Data::Hive::Store::$arg->{store_class}"
+      unless $arg->{store_class} =~ s/^[+=]//;
+
+    $self->{store} = $arg->{store_class}->new(@{ $arg->{store_args} });
+  } else {
+    $self->{store} = $arg->{store};
   }
 
   return $self;
@@ -155,8 +152,8 @@ sub NAME {
 
   $hive->ITEM('foo');
 
-Return a child of this hive.  Useful for path segments whose
-names are not valid Perl method names.
+Return a child of this hive.  Useful for path segments whose names are not
+valid Perl method names.
 
 =cut
 
@@ -168,16 +165,19 @@ sub ITEM {
   });
 }
 
-our $AUTOLOAD;
 sub AUTOLOAD {
   my $self = shift;
+  our $AUTOLOAD;
+
   (my $method = $AUTOLOAD) =~ s/.*:://;
   die "AUTOLOAD for '$method' called on non-object" unless ref $self;
+
   return if $method eq 'DESTROY';
+
   if ($method =~ /^[A-Z]+$/) {
-    require Carp;
     Carp::croak("all-caps method names are reserved: '$method'");
   }
+
   return $self->ITEM($method);
 }
 
@@ -211,55 +211,4 @@ sub DELETE {
   return $self->{store}->delete($self->{path});
 }
 
-=head1 AUTHOR
-
-Hans Dieter Pearcey, C<< <hdp at cpan.org> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to
-C<bug-data-hive at rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Data-Hive>.
-I will be notified, and then you'll automatically be notified of progress on
-your bug as I make changes.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Data::Hive
-
-You can also look for information at:
-
-=over 4
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Data-Hive>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Data-Hive>
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Hive>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Data-Hive>
-
-=back
-
-=head1 ACKNOWLEDGEMENTS
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006 Hans Dieter Pearcey, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-=cut
-
-1; # End of Data::Hive
+1;
