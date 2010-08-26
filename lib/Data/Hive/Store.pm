@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 package Data::Hive::Store;
-# ABSTRACT - a backend storage driver for Data::Hive
+# ABSTRACT: a backend storage driver for Data::Hive
 
 use Carp ();
 

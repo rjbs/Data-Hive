@@ -1,32 +1,35 @@
 Revision history for Data-Hive
 
-0.053   2008-09-12
-        ->GET($default) added
+{{$NEXT}}
+          minor tweaks, mostly to enable use of Dist::Zilla
 
-0.052   2007-11-19
-        Fix bug where Store::Hash was inadvertently destroying state
-        information it shouldn't have in some cases
+0.053     2008-09-12
+          ->GET($default) added
 
-0.051   2007-11-15
-        Guard eval with local $SIG{__DIE__} in case someone else has been
-        careless with theirs
+0.052     2007-11-19
+          Fix bug where Store::Hash was inadvertently destroying state
+          information it shouldn't have in some cases
 
-        Remove useless t/boilerplate.t
+0.051     2007-11-15
+          Guard eval with local $SIG{__DIE__} in case someone else has been
+          careless with theirs
 
-0.050   2007-04-02
-        Add GETSTR to avoid stupid SEGVs
-        Add DELETE
+          Remove useless t/boilerplate.t
 
-0.040   2006-08-28
+0.050     2007-04-02
+          Add GETSTR to avoid stupid SEGVs
+          Add DELETE
 
-        Freshen Module::Install
+0.040     2006-08-28
 
-0.03    2006-07-03
-        Add missing dep for Test::MockObject.
+          Freshen Module::Install
 
-0.02    2006-06-08
-        Add EXISTS.
+0.03      2006-07-03
+          Add missing dep for Test::MockObject.
 
-0.01    2006-06-05
-        First version, released on an unsuspecting world.
+0.02      2006-06-08
+          Add EXISTS.
+
+0.01      2006-06-05
+          First version, released on an unsuspecting world.
 
