@@ -5,19 +5,54 @@ package Data::Hive::Store::Hash;
 
 =head1 DESCRIPTION
 
-Simple hash store for Data::Hive.
+This is a simple store, primarily for testing, that will store hives in nested
+hashrefs.  All hives are represented as hashrefs, and their values are stored
+in the entry for the empty string.
+
+So, we could do this:
+
+  my $href = {};
+
+  my $hive = Data::Hive->NEW({
+    store_class => 'Hash',
+    store_args  => [ $href ],
+  });
+
+  $hive->foo->SET(1);
+  $hive->foo->bar->baz->SET(2);
+
+We would end up with C<$href> containing:
+
+  {
+    foo => {
+      ''  => 1,
+      bar => {
+        baz => {
+          '' => 2,
+        },
+      },
+    },
+  }
+
+Using empty keys results in a bigger, uglier dump, but allows a given hive to
+contain both a value and subhives.
 
 =method new
 
   my $store = Data::Hive::Store::Hash->new(\%hash);
 
-Takes a hashref to use as the store.
+The only argument expected for C<new> is a hashref, which is the hashref in
+which hive entries are stored.
+
+If no hashref is provided, a new, empty hashref will be used.
 
 =cut
 
 sub new {
-  my ($class, $hash) = @_;
-  return bless \$hash => $class;
+  my ($class, $href) = @_;
+  $href = {} unless defined $href;
+
+  return bless { store => $href } => $class;
 }
 
 =method get
@@ -33,7 +68,7 @@ sub _die {
 }
 
 my $BREAK = "BREAK\n";
-my $LAST = "LAST\n";
+my $LAST  = "LAST\n";
 
 sub _descend {
   my ($self, $path, $arg) = @_;
@@ -43,7 +78,7 @@ sub _descend {
   $arg->{cond} ||= sub { @{ shift() } };
   $arg->{end}  ||= sub { $_[0] };
 
-  my $node = $$self;
+  my $node = $self->{store};
   while ($arg->{cond}->(\@path)) {
     my $seg = shift @path;
 
