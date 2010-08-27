@@ -3,52 +3,51 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
-use Test::MockObject;
+use Test::More;
 
-use ok 'Data::Hive';
-use ok 'Data::Hive::Store::Param';
+use Data::Hive;
+use Data::Hive::Store::Param;
 
-my $obj = Test::MockObject->new;
-my $param = {};
-$obj->mock(
-  info => sub {
-    my (undef, $key, $val) = @_;
-    $param->{$key} = $val if @_ > 2;
-    return $param->{$key};
-  },
-);
-$obj->mock(
-  info_exists => sub {
-    my (undef, $key) = @_;
-    return exists $param->{$key};
+{
+  package Infostore;
+  sub new { bless {} => $_[0] }
+
+  sub info {
+    my ($self, $key, $val) = @_;
+    return keys %$self if @_ == 1;
+    $self->{$key} = $val if @_ > 2;
+    return $self->{$key};
   }
-);
-$obj->mock(
-  info_delete => sub {
-    my (undef, $key) = @_;
-    return delete $param->{$key};
-  },
-);
+
+  sub info_exists {
+    my ($self, $key) = @_;
+    return exists $self->{$key};
+  }
+
+  sub info_delete {
+    my ($self, $key) = @_;
+    return delete $self->{$key};
+  }
+}
+
+my $infostore = Infostore->new;
 
 my $hive = Data::Hive->NEW({
   store_class => 'Param',
-  store_args  => [ $obj, {
-    method => 'info',
+  store_args  => [ $infostore, {
+    method    => 'info',
     separator => '/',
     exists => 'info_exists',
     delete => 'info_delete',
   } ],
 });
 
-%$param = (
-  foo => 1,
-  'bar/baz' => 2,
-);
+$infostore->info(foo       => 1);
+$infostore->info('bar/baz' => 2);
 
 is $hive->bar->baz, 2, 'GET';
 $hive->foo->SET(3);
-is_deeply $param, { foo => 3, 'bar/baz' => 2 }, 'SET';
+is_deeply $infostore, { foo => 3, 'bar/baz' => 2 }, 'SET';
 
 is $hive->bar->baz->NAME, 'bar/baz', 'NAME';
 
@@ -57,9 +56,11 @@ ok   $hive->foo->EXISTS, "existing key does EXISTS";
 
 $hive->ITEM("and/or")->SET(17);
 
-is_deeply $param, { foo => 3, 'bar/baz' => 2, 'and%2for' => 17 },
+is_deeply $infostore, { foo => 3, 'bar/baz' => 2, 'and%2for' => 17 },
   'SET (with escape)';
 is $hive->ITEM("and/or"), 17, 'GET (with escape)';
 
 is $hive->bar->baz->DELETE, 2, "delete returns old value";
-is_deeply $param, { foo => 3, 'and%2for' => 17 }, "delete removed item";
+is_deeply $infostore, { foo => 3, 'and%2for' => 17 }, "delete removed item";
+
+done_testing;

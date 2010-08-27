@@ -138,7 +138,8 @@ sub delete {
   my ($self, $path) = @_;
   my $code = $self->{delete};
   my $key = $self->_path($path);
-  return ref($code) ? $code->($key) : $self->{obj}->$code($key);
+
+  return $self->{obj}->$code($key);
 }
 
 1;
