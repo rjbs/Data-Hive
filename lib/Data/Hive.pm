@@ -196,7 +196,7 @@ use overload (
 
 sub GET {
   my ($self, $default) = @_;
-  my $value = $self->{store}->get($self->{path});
+  my $value = $self->STORE->get($self->{path});
   return defined $value ? $value : $default;
 }
 
@@ -219,7 +219,7 @@ Its return value is not defined.
 
 sub SET {
   my $self = shift;
-  return $self->{store}->set($self->{path}, @_);
+  return $self->STORE->set($self->{path}, @_);
 }
 
 =head2 EXISTS
@@ -232,7 +232,7 @@ This method tests whether a value (even an undefined one) exists for the hive.
 
 sub EXISTS {
   my $self = shift;
-  return $self->{store}->exists($self->{path});
+  return $self->STORE->exists($self->{path});
 }
 
 =head2 DELETE
@@ -246,7 +246,7 @@ value had existed, C<undef> is returned.
 
 sub DELETE {
   my $self = shift;
-  return $self->{store}->delete($self->{path});
+  return $self->STORE->delete($self->{path});
 }
 
 =head2 ITEM
@@ -269,6 +269,12 @@ This method should be needed fairly rarely.
 
 sub ITEM {
   my ($self, $key) = @_;
+
+  if (! defined $key or ! length $key or ref $key) {
+    $key = '(undef)' unless defined $key;
+    Carp::croak "illegal hive path part: $key";
+  }
+
   return $self->NEW({
     %$self,
     path => [ @{$self->{path}}, $key ],
@@ -285,7 +291,17 @@ change.  It is provided primarily for debugging.
 
 sub NAME {
   my $self = shift;
-  return $self->{store}->name($self->{path});
+  return $self->STORE->name($self->{path});
+}
+
+=head2 STORE
+
+This method returns the storage driver being used by the hive.
+
+=cut
+
+sub STORE {
+  return $_[0]->{store}
 }
 
 sub AUTOLOAD {
