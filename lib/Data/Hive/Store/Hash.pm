@@ -35,7 +35,12 @@ We would end up with C<$href> containing:
   }
 
 Using empty keys results in a bigger, uglier dump, but allows a given hive to
-contain both a value and subhives.
+contain both a value and subhives.  B<Please note> that this is different
+behavior compared with earlier releases, in which empty keys were not used and
+it was not legal to have a value and a hive at a given path.  It is possible,
+although fairly unlikely, that this format will change again.  The Hash store
+should generally be used for testing things that use a hive, as opposed for
+building hashes that will be used for anything else.
 
 =method new
 
