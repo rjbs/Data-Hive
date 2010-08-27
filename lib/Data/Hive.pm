@@ -249,9 +249,10 @@ sub DELETE {
   return $self->STORE->delete($self->{path});
 }
 
-=head2 ITEM
 
-  $hive->ITEM('foo');   #  equivalent to $hive->foo
+=head2 HIVE
+
+  $hive->HIVE('foo');   #  equivalent to $hive->foo
 
 This method returns a subhive of the current hive.  In most cases, it is
 simpler to use the lowercase hive access method.  This method is useful when
@@ -263,11 +264,17 @@ C<UNIVERSAL>.  In general, only C<import>, C<isa>, and C<can> should fall into
 this category, but some libraries unfortunately add methods to C<UNIVERSAL>.
 Common offenders include C<moniker>, C<install_sub>, C<reinstall_sub>.
 
-This method should be needed fairly rarely.
+This method should be needed fairly rarely.  It may also be called as C<ITEM>
+for historical reasons.
 
 =cut
 
 sub ITEM {
+  my ($self, @rest) = @_;
+  return $self->HIVE(@rest);
+}
+
+sub HIVE {
   my ($self, $key) = @_;
 
   if (! defined $key or ! length $key or ref $key) {
