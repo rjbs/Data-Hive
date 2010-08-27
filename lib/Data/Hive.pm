@@ -249,6 +249,14 @@ sub DELETE {
   return $self->STORE->delete($self->{path});
 }
 
+=item KEYS
+
+=cut
+
+sub KEYS {
+  my ($self) = @_;
+  return $self->STORE->keys($self->{path});
+}
 
 =head2 HIVE
 
