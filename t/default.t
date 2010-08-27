@@ -18,12 +18,14 @@ isa_ok($hive, 'Data::Hive');
 $hive->foo->SET(1);
 
 is(0 + $hive->bar,            0, "0 == ->bar");
+
 {
   no warnings;
   is(0 + $hive->bar->GET,     0, "0 == ->bar->GET");
 }
+
 is(0 + $hive->bar->GETNUM,    0, "0 == ->bar->GETNUM");
 is(0 + $hive->bar->GET(1),    1, "1 == ->bar->GET(1)");
 is(0 + $hive->bar->GETNUM(1), 1, "1 == ->bar->GETNUM(1)");
 
-is_deeply($store, { foo => 1 }, 'did not autovivify');
+is_deeply($store, { foo => { '' => 1 } }, 'did not autovivify');
