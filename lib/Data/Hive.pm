@@ -156,14 +156,14 @@ sub NEW {
 
   my $self = bless { path => \@path } => ref($class) || $class;
 
-  if ($arg->{store_class} and $arg->{store_args}) {
+  if ($arg->{store_class}) {
     die "don't use 'store' with 'store_class' and 'store_args'"
       if $arg->{store};
 
     $arg->{store_class} = "Data::Hive::Store::$arg->{store_class}"
       unless $arg->{store_class} =~ s/^[+=]//;
 
-    $self->{store} = $arg->{store_class}->new(@{ $arg->{store_args} });
+    $self->{store} = $arg->{store_class}->new(@{ $arg->{store_args} || [] });
   } else {
     $self->{store} = $arg->{store};
   }

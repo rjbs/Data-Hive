@@ -55,6 +55,17 @@ sub new {
   return bless { store => $href } => $class;
 }
 
+=method hash_store
+
+This method returns the hashref in which things are being used.  You should not
+alter its contents!
+
+=cut
+
+sub hash_store {
+  $_[0]->{store}
+}
+
 =method get
 
 Use given C<< \@path >> as nesting keys in the hashref store.
@@ -68,17 +79,26 @@ sub _die {
 }
 
 my $BREAK = "BREAK\n";
-my $LAST  = "LAST\n";
 
+# Wow, this is quite a little machine!  Here's a slightly simplified overview
+# of what it does:  -- rjbs, 2010-08-27
+#
+# As long as cond->(\@remaining_path) is true, execute step->($next,
+# $current_hashref, \@remaining_path)
+#
+# If it dies with $BREAK, stop looping and return.  Once the cond returns
+# false, return end->($current_hashref, \@remaining_path)
 sub _descend {
-  my ($self, $path, $arg) = @_;
-  my @path = @$path;
+  my ($self, $orig_path, $arg) = @_;
+  my @path = @$orig_path;
+
   $arg ||= {};
   $arg->{step} or die "step is required";
   $arg->{cond} ||= sub { @{ shift() } };
   $arg->{end}  ||= sub { $_[0] };
 
-  my $node = $self->{store};
+  my $node = $self->hash_store;
+
   while ($arg->{cond}->(\@path)) {
     my $seg = shift @path;
 
@@ -99,11 +119,15 @@ sub get {
   my ($self, $path) = @_;
   return $self->_descend(
     $path, {
+      end  => sub { $_[0]->{''} },
       step => sub {
         my ($seg, $node) = @_;
+
         if (defined $node and not ref $node) {
+          # We found a bogus entry in the store! -- rjbs, 2010-08-27
           _die("can't get key '$seg' of non-ref value '$node'");
         }
+
         die $BREAK unless exists $node->{$seg};
       }
     }
@@ -133,7 +157,7 @@ sub set {
       cond => sub { @{ shift() } > 1 },
       end  => sub {
         my ($node, $path) = @_;
-        $node->{$path->[0]} = $value;
+        $node->{$path->[0]}{''} = $value;
       },
     },
   );
@@ -188,10 +212,9 @@ sub delete {
         my ($seg, $node) = @_;
         die $BREAK unless exists $node->{$seg};
       },
-      cond => sub { @{ shift() } > 1 },
       end  => sub {
         my ($node, $path) = @_;
-        delete $node->{$path->[0]};
+        delete $node->{$path->[0]}{''};
       },
     },
   );

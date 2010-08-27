@@ -1,42 +1,68 @@
 #!perl
-
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
-use ok 'Data::Hive';
-use ok 'Data::Hive::Store::Hash';
+use Data::Hive;
+use Data::Hive::Store::Hash;
 
-my $hive = Data::Hive->NEW({
-  store => Data::Hive::Store::Hash->new(
-    my $store = {}
-  ),
+use Test::More 0.88;
+
+my $hive  = Data::Hive->NEW({
+  store_class => 'Hash',
 });
 
 my $tmp;
 
-isa_ok($hive, 'Data::Hive');
+isa_ok($hive,      'Data::Hive', 'top-level hive');
+
+isa_ok($hive->foo, 'Data::Hive', '"foo" subhive');
 
 $hive->foo->SET(1);
 
-is_deeply($store, { foo => 1 }, 'changes made to store');
+is_deeply(
+  $hive->STORE->hash_store,
+  { foo => { '' => 1 } },
+  'changes made to store',
+);
 
-$tmp = 0 + $hive->bar;
+$hive->bar->baz->GET;
 
-is_deeply($store, { foo => 1 }, 'did not autovivify');
+is_deeply(
+  $hive->STORE->hash_store,
+  { foo => { '' => 1 } },
+  'did not autovivify'
+);
 
 $hive->baz->quux->SET(2);
 
-is_deeply($store, {
-  foo => 1,
-  baz => { quux => 2 }
-}, 'deep set');
+is_deeply(
+  $hive->STORE->hash_store,
+  {
+    foo => { '' => 1 },
+    baz => { quux => { '' => 2 } },
+  },
+  'deep set',
+);
 
-eval { $tmp = 0 + $hive->foo->bar };
-like $@, qr/can't get key 'bar'/, "error on wrongly nested get";
+is(
+  $hive->foo->GET,
+  1,
+  "get the 1 from ->foo",
+);
 
-eval { $hive->foo->bar->SET(3) };
-like $@, qr/overwrite existing non-ref/, "error on wrongly nested set";
+is(
+  $hive->foo->bar->GET,
+  undef,
+  "find nothing at ->foo->bar",
+);
+
+$hive->foo->bar->SET(3);
+
+is(
+  $hive->foo->bar->GET,
+  3,
+  "wrote and retrieved 3 from ->foo->bar",
+);
 
 ok ! $hive->not->EXISTS, "non-existent key doesn't EXISTS";
 ok   $hive->foo->EXISTS, "existing key does EXISTS";
@@ -44,7 +70,9 @@ ok   $hive->foo->EXISTS, "existing key does EXISTS";
 my $quux = $hive->baz->quux;
 is $quux->GET, 2, "get from saved leaf";
 is $quux->DELETE, 2, "delete returned old value";
-is_deeply($store, {
+is_deeply($hive->hash_store, {
   foo => 1,
   baz => { },
 }, "deep delete");
+
+done_testing;
