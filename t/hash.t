@@ -67,12 +67,43 @@ is(
 ok ! $hive->not->EXISTS, "non-existent key doesn't EXISTS";
 ok   $hive->foo->EXISTS, "existing key does EXISTS";
 
+$hive->baz->quux->frotz->SET(4);
+
+is_deeply(
+  $hive->STORE->hash_store,
+  {
+    foo => { '' => 1, bar => { '' => 3 } },
+    baz => { quux => { '' => 2, frotz => { '' => 4 } } },
+  },
+  "deep delete"
+);
+
 my $quux = $hive->baz->quux;
-is $quux->GET, 2, "get from saved leaf";
-is $quux->DELETE, 2, "delete returned old value";
-is_deeply($hive->hash_store, {
-  foo => 1,
-  baz => { },
-}, "deep delete");
+is($quux->GET, 2, "get from saved leaf");
+is($quux->DELETE, 2, "delete returned old value");
+is($quux->GET, undef, "after deletion, hive has no value");
+
+is_deeply(
+  $hive->STORE->hash_store,
+  {
+    foo => { '' => 1, bar => { '' => 3 } },
+    baz => { quux => { frotz => { '' => 4 } } },
+  },
+  "deep delete"
+);
+
+my $frotz = $hive->baz->quux->frotz;
+is($frotz->GET, 4, "get from saved leaf");
+is($frotz->DELETE, 4, "delete returned old value");
+is($frotz->GET, undef, "after deletion, hive has no value");
+
+is_deeply(
+  $hive->STORE->hash_store,
+  {
+    foo => { '' => 1, bar => { '' => 3 } },
+    baz => { quux => { } },
+  },
+  "deep delete: after a hive had no keys, it is deleted, too"
+) or note explain $hive->STORE->hash_store;
 
 done_testing;

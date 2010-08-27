@@ -206,15 +206,34 @@ Descend the hash and delete the given path.  Only deletes the leaf.
 
 sub delete {
   my ($self, $path) = @_;
+
   return $self->_descend(
     $path, {
       step => sub {
         my ($seg, $node) = @_;
         die $BREAK unless exists $node->{$seg};
       },
+      cond => sub { @{ shift() } > 1 },
       end  => sub {
-        my ($node, $path) = @_;
-        delete $node->{$path->[0]}{''};
+        my ($node, $final_path) = @_;
+        my $this = $node->{ $final_path->[0] };
+        my $rv = delete $this->{''};
+
+        # Cleanup empty trees after deletion!  It would be convenient to have
+        # ->_ascend, but I'm not likely to bother with writing it just yet.
+        # -- rjbs, 2010-08-27
+        $self->_descend(
+          $path, {
+            step => sub {
+              my ($seg, $node) = @_;
+              return if keys %{ $node->{$seg} };
+              delete $node->{$seg};
+              die $BREAK;
+            },
+          }
+        );
+
+        return $rv;
       },
     },
   );
