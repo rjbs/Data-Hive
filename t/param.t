@@ -63,4 +63,6 @@ is $hive->ITEM("and/or"), 17, 'GET (with escape)';
 is $hive->bar->baz->DELETE, 2, "delete returns old value";
 is_deeply $infostore, { foo => 3, 'and%2for' => 17 }, "delete removed item";
 
+$hive->KEYS;
+
 done_testing;

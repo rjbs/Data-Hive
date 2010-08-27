@@ -27,7 +27,7 @@ Use a different method name on the object (default is 'param').
 
 = escape
 
-List of characters to escape (prepend '\' to) in keys.
+List of characters to escape (via URI encoding) in keys.
 
 Defaults to the C<< separator >>.
 
@@ -140,6 +140,19 @@ sub delete {
   my $key = $self->_path($path);
 
   return $self->{obj}->$code($key);
+}
+
+=method keys
+
+=cut
+
+sub keys {
+  my ($self, $path) = @_;
+
+  my $method = $self->{method};
+  my @names  = $self->{obj}->$method;
+
+  warn "@names\n";
 }
 
 1;
