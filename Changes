@@ -2,6 +2,14 @@ Revision history for Data-Hive
 
 {{$NEXT}}
 
+1.000     2010-08-27 21:48:58 America/New_York
+          significant documentation overhaul
+
+          add the ->KEYS method to Data::Hive and the core stores
+
+          allow the Hash store to have a value and subhives per path name
+          (this break backcompat with existing hash structure)
+
 0.054     2010-08-26 14:58:29 America/New_York
           minor tweaks, mostly to enable use of Dist::Zilla
 
