@@ -5,6 +5,13 @@ package Data::Hive::Store::Param;
 
 use URI::Escape ();
 
+=head1 DESCRIPTION
+
+This hive store will soon be overhauled.
+
+Basically, it expects to access a hive in an object with CGI's C<param> method,
+or the numerous other things with that interface.
+
 =method new
 
   # use default method name 'param'
@@ -84,44 +91,20 @@ sub _param {
   return $self->{obj}->$meth($path, @_);
 }
 
-=method get
-
-Join the path together with the C<< separator >> and get it from the object.
-
-=cut
-
 sub get {
   my ($self, $path) = @_;
   return $self->_param($path);
 }
 
-=method set
-
-See L</get>.
-
-=cut
-
 sub set {
   my ($self, $path, $val) = @_;
   return $self->_param($path => $val);
 }
-
-=method name
-
-Join path together with C<< separator >> and return it.
-
-=cut
  
 sub name {
   my ($self, $path) = @_;
   return $self->_path($path);
 }
-
-=method exists
-
-Return true if the C<< name >> of this hive is a parameter.
-
-=cut
 
 sub exists {
   my ($self, $path) = @_;
@@ -130,12 +113,6 @@ sub exists {
   return ref($code) ? $code->($key) : $self->{obj}->$code($key);
 }
 
-=method delete
-
-Delete the entry for the C<< name >> of this hive and return its old value.
-
-=cut
-
 sub delete {
   my ($self, $path) = @_;
   my $code = $self->{delete};
@@ -143,10 +120,6 @@ sub delete {
 
   return $self->{obj}->$code($key);
 }
-
-=method keys
-
-=cut
 
 sub keys {
   my ($self, $path) = @_;

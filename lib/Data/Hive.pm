@@ -249,7 +249,29 @@ sub DELETE {
   return $self->STORE->delete($self->{path});
 }
 
-=item KEYS
+=head2 KEYS
+
+  my @keys = $hive->KEYS;
+
+This returns a list of next-level path elements that exist.  For example, given
+a hive with values for the following paths:
+
+  foo
+  foo/bar
+  foo/bar/baz
+  foo/xyz/abc
+  foo/xyz/def
+  foo/123
+
+This shows the expected results:
+
+  keys of      | returns
+  -------------+------------
+  foo          | bar, xyz, 123
+  foo/bar      | baz
+  foo/bar/baz  |
+  foo/xyz      | abc, def
+  foo/123      |
 
 =cut
 

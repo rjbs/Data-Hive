@@ -71,12 +71,6 @@ sub hash_store {
   $_[0]->{store}
 }
 
-=method get
-
-Use given C<< \@path >> as nesting keys in the hashref store.
-
-=cut
-
 sub _die {
   require Carp::Clan;
   Carp::Clan->import('^Data::Hive($|::)');
@@ -139,16 +133,6 @@ sub get {
   );
 }
 
-=method set
-
-See C<L</get>>.  Dies if you try to set a key underneath an existing
-non-hashref key, e.g.:
-
-  $hash = { foo => 1 };
-  $store->set([ 'foo', 'bar' ], 2); # dies
-
-=cut
-
 sub set {
   my ($self, $path, $value) = @_;
   return $self->_descend(
@@ -170,8 +154,8 @@ sub set {
 
 =method name
 
-Returns a string, potentially suitable for eval-ing, describing a hash
-dereference of a variable called C<< $STORE >>.
+The name returned by the Hash store is a string, potentially suitable for
+eval-ing, describing a hash dereference of a variable called C<< $STORE >>.
 
   "$STORE->{foo}->{bar}"
 
@@ -184,13 +168,6 @@ sub name {
   return join '->', '$STORE', map { "{'$_'}" } @$path;
 }
 
-=method exists
-
-Descend the hash and return false if any of the path's parts do not exist, or
-true if they all do.
-
-=cut
-
 sub exists {
   my ($self, $path) = @_;
   return $self->_descend(
@@ -202,12 +179,6 @@ sub exists {
     },
   );
 }  
-
-=method delete
-
-Descend the hash and delete the given path.  Only deletes the leaf.
-
-=cut
 
 sub delete {
   my ($self, $path) = @_;
@@ -243,10 +214,6 @@ sub delete {
     },
   );
 }
-
-=head2 keys
-
-=cut
 
 sub keys {
   my ($self, $path) = @_;
