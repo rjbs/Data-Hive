@@ -176,6 +176,7 @@ sub exists {
         my ($seg, $node) = @_;
         die $BREAK unless exists $node->{$seg};
       },
+      end  => sub { return exists $_[0]->{''}; },
     },
   );
 }  
