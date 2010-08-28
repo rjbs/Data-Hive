@@ -63,6 +63,26 @@ is $hive->ITEM("and/or"), 17, 'GET (with escape)';
 is $hive->bar->baz->DELETE, 2, "delete returns old value";
 is_deeply $infostore, { foo => 3, 'and%2for' => 17 }, "delete removed item";
 
-$hive->KEYS;
+$hive->foo->bar->SET(4);
+$hive->foo->bar->baz->SET(5);
+$hive->foo->quux->baz->SET(6);
+
+is_deeply(
+  [ sort $hive->KEYS ],
+  [ qw(and/or foo) ],
+  "get the top level KEYS",
+);
+
+is_deeply(
+  [ sort $hive->foo->KEYS ],
+  [ qw(bar quux) ],
+  "get the KEYS under foo",
+);
+
+is_deeply(
+  [ sort $hive->foo->bar->KEYS ],
+  [ qw(baz) ],
+  "get the KEYS under foo/bar",
+);
 
 done_testing;

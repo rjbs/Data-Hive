@@ -3,6 +3,8 @@ use warnings;
 package Data::Hive::Store::Param;
 # ABSTRACT: CGI::param-like store for Data::Hive
 
+use URI::Escape ();
+
 =method new
 
   # use default method name 'param'
@@ -152,7 +154,24 @@ sub keys {
   my $method = $self->{method};
   my @names  = $self->{obj}->$method;
 
-  warn "@names\n";
+  my $name = $self->_path($path);
+
+  my $sep = $self->{separator};
+
+  my $start = length $name ? "$name$sep" : q{};
+  my %seen  = map { /\A\Q$start\E(.+?)(\z|\Q$sep\E)/ ? ($1 => 1) : () } @names;
+
+  my @keys = map { URI::Escape::uri_unescape($_) } keys %seen;
+  return @keys;
 }
+
+=head1 BUGS
+
+The interaction between escapes and separators is not very well formalized or
+tested.  If you change things much, you'll probably be frustrated.
+
+Fixes and/or tests would be lovely.
+
+=cut
 
 1;
