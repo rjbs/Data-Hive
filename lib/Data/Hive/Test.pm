@@ -88,7 +88,7 @@ sub test_new_hive {
 
       ok($hive->empty->EXISTS, "after being set, ->empty EXISTS");
 
-      is($hive->empty->GET,     '', "/empty is ''");
+      is($hive->empty->GET,     '', "->empty->GET is ''");
       is($hive->empty->GET(10), '', "->empty->GET(10) is ''");
     };
 
@@ -99,7 +99,8 @@ sub test_new_hive {
 
       ok($hive->undef->EXISTS, "after being set, ->undef EXISTS");
 
-      is($hive->undef->GET,    undef, "/undef is undef");
+      is($hive->undef->GET,     undef, "->undef->GET is undef");
+      is($hive->undef->GET(10),    10, "->undef->GET(10) is undef");
     };
 
     subtest 'non-existing value' => sub {
@@ -109,15 +110,55 @@ sub test_new_hive {
 
       ok(! $hive->missing->EXISTS, "mere GET-ing won't cause ->missing to EXIST");
 
-      is($hive->missing->GET(1),    1, " == ->missing->GET(1)");
-      is($hive->missing->GET(0),    0, "0 == ->missing->GET(0)");
-      is($hive->missing->GET(''),  '', "'' == ->missing->GET('')");
+      is($hive->missing->GET(10),  10, "->missing->GET(10) is 10");
+    };
+
+    subtest 'nested value' => sub {
+      ok(
+        ! $hive->two->EXISTS,
+        "before setting ->two->deep, ->two doesn't EXISTS"
+      );
+
+      ok(
+        ! $hive->two->deep->EXISTS,
+        "before setting ->two->deep, ->two->deep doesn't EXISTS"
+      );
+
+      is(
+        $hive->two->deep->GET,
+        undef,
+        "before being set, ->two->deep is undef"
+      );
+
+      $hive->two->deep->SET('2D');
+
+      ok(
+        ! $hive->two->EXISTS,
+        "after setting ->two->deep, ->two still doesn't EXISTS"
+      );
+
+      ok(
+        $hive->two->deep->EXISTS,
+        "after setting ->two->deep, ->two->deep EXISTS"
+      );
+
+      is(
+        $hive->two->deep->GET,
+        '2D',
+        "after being set, ->two->deep->GET returns '2D'",
+      );
+
+      is(
+        $hive->two->deep->GET(10),
+        '2D',
+        "after being set, ->two->deep->GET(10) returns '2D'",
+      );
     };
 
     is_deeply(
       [ sort $hive->KEYS  ],
-      [ qw(empty one undef zero) ],
-      "we have the right top-level keys",
+      [ qw(empty one two undef zero) ],
+      "in the end, we have the right top-level keys",
     );
   };
 
