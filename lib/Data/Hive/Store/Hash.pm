@@ -244,4 +244,22 @@ sub delete {
   );
 }
 
+=head2 keys
+
+=cut
+
+sub keys {
+  my ($self, $path) = @_;
+
+  return $self->_descend($path, {
+    step => sub {
+      my ($seg, $node) = @_;
+      die $BREAK unless exists $node->{$seg};
+    },
+    end  => sub {
+      return grep { length } keys %{ $_[0] };
+    },
+  });
+}
+
 1;

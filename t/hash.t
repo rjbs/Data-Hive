@@ -104,6 +104,35 @@ is_deeply(
     baz => { quux => { } },
   },
   "deep delete: after a hive had no keys, it is deleted, too"
-) or note explain $hive->STORE->hash_store;
+);
+
+{
+  my $hive  = Data::Hive->NEW({
+    store_class => 'Hash',
+  });
+
+  $hive->HIVE('and/or')->SET(1);
+  $hive->foo->bar->SET(4);
+  $hive->foo->bar->baz->SET(5);
+  $hive->foo->quux->baz->SET(6);
+
+  is_deeply(
+    [ sort $hive->KEYS ],
+    [ qw(and/or foo) ],
+    "get the top level KEYS",
+  );
+
+  is_deeply(
+    [ sort $hive->foo->KEYS ],
+    [ qw(bar quux) ],
+    "get the KEYS under foo",
+  );
+
+  is_deeply(
+    [ sort $hive->foo->bar->KEYS ],
+    [ qw(baz) ],
+    "get the KEYS under foo/bar",
+  );
+}
 
 done_testing;
