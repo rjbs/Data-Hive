@@ -8,6 +8,8 @@ use Test::More;
 use Data::Hive;
 use Data::Hive::Store::Param;
 
+use Data::Hive::Test;
+
 {
   package Infostore;
   sub new { bless {} => $_[0] }
@@ -30,6 +32,19 @@ use Data::Hive::Store::Param;
   }
 }
 
+Data::Hive::Test->test_new_hive(
+  "basic Param backed hive",
+  {
+    store_class => 'Param',
+    store_args  => [ Infostore->new, {
+      method    => 'info',
+      separator => '/',
+      exists => 'info_exists',
+      delete => 'info_delete',
+    } ],
+  },
+);
+
 my $infostore = Infostore->new;
 
 my $hive = Data::Hive->NEW({
@@ -45,7 +60,7 @@ my $hive = Data::Hive->NEW({
 $infostore->info(foo       => 1);
 $infostore->info('bar/baz' => 2);
 
-is $hive->bar->baz, 2, 'GET';
+is $hive->bar->baz->GET, 2, 'GET';
 $hive->foo->SET(3);
 is_deeply $infostore, { foo => 3, 'bar/baz' => 2 }, 'SET';
 
@@ -58,7 +73,8 @@ $hive->ITEM("and/or")->SET(17);
 
 is_deeply $infostore, { foo => 3, 'bar/baz' => 2, 'and%2for' => 17 },
   'SET (with escape)';
-is $hive->ITEM("and/or"), 17, 'GET (with escape)';
+
+is $hive->ITEM("and/or")->GET, 17, 'GET (with escape)';
 
 is $hive->bar->baz->DELETE, 2, "delete returns old value";
 is_deeply $infostore, { foo => 3, 'and%2for' => 17 }, "delete removed item";

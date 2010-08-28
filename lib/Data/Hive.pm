@@ -191,8 +191,14 @@ used internally by the deprecated overloadings for hives.
 =cut
 
 use overload (
-  q{""}    => 'GETSTR',
-  q{0+}    => 'GETNUM',
+  q{""}    => sub {
+    Carp::carp "using hive as string for implicit GET is deprecated";
+    shift->GET(@_);
+  },
+  q{0+}    => sub {
+    Carp::carp "using hive as number for implicit GET is deprecated";
+    shift->GET(@_);
+  },
   fallback => 1,
 );
 
@@ -202,11 +208,14 @@ sub GET {
   return defined $value ? $value : $default;
 }
 
-sub GETNUM { shift->GET(@_) || 0 }
+sub GETNUM {
+  Carp::carp "GETNUM method is deprecated";
+  shift->GET(@_);
+}
 
 sub GETSTR {
-  my $rv = shift->GET(@_);
-  return defined($rv) ? $rv : '';
+  Carp::carp "GETSTR method is deprecated";
+  shift->GET(@_);
 }
 
 =head2 SET

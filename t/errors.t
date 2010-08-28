@@ -26,12 +26,12 @@ isnt(
   "we can't create a hive with no means to make a store",
 );
 
-like(
+ok(
   exception {
     my $store = Data::Hive::Store::Hash->new;
-    Data::Hive->NEW({ store => $store, store_class => (ref $store) }) },
-  undef,
-  "we can't create a hive with no means to make a store",
+    Data::Hive->NEW({ store => $store, store_class => 'Hash' });
+  },
+  "we can't make a hive with both a store and a store_class",
 );
 
 done_testing;

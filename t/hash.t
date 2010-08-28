@@ -5,9 +5,26 @@ use warnings;
 use Data::Hive;
 use Data::Hive::Store::Hash;
 
+use Data::Hive::Test;
+
 use Test::More 0.88;
 
-my $hive  = Data::Hive->NEW({
+Data::Hive::Test->test_new_hive(
+  'basic hash store',
+  { store => Data::Hive::Store::Hash->new },
+);
+
+for my $class (qw(
+  Hash
+  +Data::Hive::Store::Hash
+  =Data::Hive::Store::Hash
+)) {
+  my $hive = Data::Hive->NEW({ store_class => $class });
+
+  isa_ok($hive->STORE, 'Data::Hive::Store::Hash', "store from $class");
+}
+
+my $hive = Data::Hive->NEW({
   store_class => 'Hash',
 });
 
