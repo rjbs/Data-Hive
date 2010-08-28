@@ -48,8 +48,8 @@ both.  For example, we can do this:
 This wouldn't be possible with a hashref, because C<< $href->{entry} >> could
 not hold both another node and a simple value.
 
-It also means that a hive might non-existant entries found along the ways to
-entries that exist:
+It also means that along the ways to existing values in a hive, there might be
+paths with no existing value.
 
   $hive->NEW(...);                  # create a new hive with no entries
 
@@ -164,8 +164,10 @@ sub NEW {
       unless $arg->{store_class} =~ s/^[+=]//;
 
     $self->{store} = $arg->{store_class}->new(@{ $arg->{store_args} || [] });
-  } else {
+  } elsif ($arg->{store}) {
     $self->{store} = $arg->{store};
+  } else {
+    Carp::croak "can't create a hive with no store";
   }
 
   return $self;
@@ -354,7 +356,7 @@ sub AUTOLOAD {
     Carp::croak("all-caps method names are reserved: '$method'");
   }
 
-  return $self->ITEM($method);
+  return $self->HIVE($method);
 }
 
 1;
