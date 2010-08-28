@@ -27,7 +27,7 @@ differences:
 
 =begin :list
 
-* a hive is always accessed by methods, never by dereferencing with C<<->{}>>
+* a hive is always accessed by methods, never by dereferencing with C<< ->{} >>
 
 For example, these two lines perform similar tasks:
 
