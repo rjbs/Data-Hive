@@ -3,7 +3,44 @@ use warnings;
 package Data::Hive::Test;
 # ABSTRACT: a bundle of tests for Data::Hive stores
 
-use Test::More;
+use Data::Hive;
+
+use Test::More 0.94; # subtest
+
+=head1 SYNOPSIS
+
+  use Test::More;
+
+  use Data::Hive::Test;
+  use Data::Hive::Store::MyNewStore;
+
+  Data::Hive::Test->test_new_hive({ store_class => 'MyNewStore' });
+
+  # rest of your tests for your store
+
+  done_testing;
+
+=head1 DESCRIPTION
+
+Data::Hive::Test is a library of tests that should be passable for any
+conformant L<Data::Hive::Store> implementation.  It provides a method for
+running a suite of tests -- which may expand or change -- that check the
+behavior of a hive store by building a hive around it and testing its behavior.
+
+=method test_new_hive
+
+  Data::Hive::Test->test_new_hive( $desc, \%args_to_NEW );
+
+This method expects an (optional) description followed by a hashref of
+arguments to be passed to Data::Hive's C<L<NEW|Data::Hive/NEW>> method.  A new
+hive will be constructed with those arguments and a single subtest will be run,
+including subtests that should pass against any conformant Data::Hive::Store
+implementation.
+
+If the tests pass, the method will return the hive.  If they fail, the method
+will return false.
+
+=cut
 
 sub test_new_hive {
   my ($self, $desc, $arg) = @_;
