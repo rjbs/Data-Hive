@@ -180,13 +180,15 @@ sub NEW {
 The C<GET> method gets the hive value.  If there is no defined value at the
 path and a default has been supplied, the default will be returned instead.
 
-=head2 GETNUM
+This method may also be called as C<GETSTR> or C<GETNUM> for backward
+compatibility, but this is deprecated and will be removed in a future release.
 
-=head2 GETSTR
+=head3 overloading
 
-These are provided soley for Perl 5.6.1 compatability, where returning undef
-from overloaded numification/stringification can cause a segfault.  They are
-used internally by the deprecated overloadings for hives.
+Hives are overloaded for stringification and numification so that they behave
+like their value when used without an explicit C<GET>.  This behavior is
+deprecated and will be removed in a future release.  Always use C<GET> to get
+the value of a hive.
 
 =cut
 
