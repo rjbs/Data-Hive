@@ -21,12 +21,7 @@ use Data::Hive::Test;
     return $self->{$key};
   }
 
-  sub info_exists {
-    my ($self, $key) = @_;
-    return exists $self->{$key};
-  }
-
-  sub info_delete {
+  sub delete {
     my ($self, $key) = @_;
     return delete $self->{$key};
   }
@@ -39,8 +34,6 @@ Data::Hive::Test->test_new_hive(
     store_args  => [ Infostore->new, {
       method    => 'info',
       separator => '/',
-      exists => 'info_exists',
-      delete => 'info_delete',
     } ],
   },
 );
@@ -52,8 +45,6 @@ my $hive = Data::Hive->NEW({
   store_args  => [ $infostore, {
     method    => 'info',
     separator => '/',
-    exists => 'info_exists',
-    delete => 'info_delete',
   } ],
 });
 

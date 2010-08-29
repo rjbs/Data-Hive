@@ -81,8 +81,16 @@ sub new {
     escape    => $arg->{escape} || $arg->{separator} || '.',
     separator => $arg->{separator} || substr($arg->{escape}, 0, 1),
     method    => $arg->{method} || 'param',
-    exists    => $arg->{exists} || sub { exists $obj->{ shift() } },
-    delete    => $arg->{delete} || sub { delete $obj->{ shift() } },
+    exists    => $arg->{exists} || sub {
+      my ($self, $key) = @_;
+      my $method = $self->{method};
+      my $exists = grep { $key eq $_ } $self->{obj}->$method;
+      return ! ! $exists;
+    },
+    delete    => $arg->{delete} || sub {
+      my ($self, $key) = @_;
+      $self->{obj}->delete($key);
+    },
   };
 
   return bless $guts => $class;
@@ -114,7 +122,7 @@ sub exists {
   my ($self, $path) = @_;
   my $code = $self->{exists};
   my $key = $self->_path($path);
-  return ref($code) ? $code->($key) : $self->{obj}->$code($key);
+  return $self->$code($key);
 }
 
 sub delete {
@@ -122,7 +130,7 @@ sub delete {
   my $code = $self->{delete};
   my $key = $self->_path($path);
 
-  return $self->{obj}->$code($key);
+  return $self->$code($key);
 }
 
 sub keys {
