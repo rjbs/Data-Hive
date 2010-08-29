@@ -74,14 +74,18 @@ sub _path {
 
 sub new {
   my ($class, $obj, $arg) = @_;
-  $arg              ||= {};
-  $arg->{escape}    ||= $arg->{separator} || '.';
-  $arg->{separator} ||= substr($arg->{escape}, 0, 1);
-  $arg->{method}    ||= 'param';
-  $arg->{exists}    ||= sub { exists $obj->{shift()} };
-  $arg->{delete}    ||= sub { delete $obj->{shift()} };
-  $arg->{obj}         = $obj;
-  return bless { %$arg } => $class;
+  $arg ||= {};
+
+  my $guts = {
+    obj       => $obj,
+    escape    => $arg->{escape} || $arg->{separator} || '.',
+    separator => $arg->{separator} || substr($arg->{escape}, 0, 1),
+    method    => $arg->{method} || 'param',
+    exists    => $arg->{exists} || sub { exists $obj->{ shift() } },
+    delete    => $arg->{delete} || sub { delete $obj->{ shift() } },
+  };
+
+  return bless $guts => $class;
 }
 
 sub _param {
