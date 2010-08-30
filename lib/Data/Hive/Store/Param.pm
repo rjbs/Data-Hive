@@ -42,53 +42,47 @@ This method should have the "usual" behavior for a C<param> method:
 The Param store does not check the types of values, but for interoperation with
 other stores, sticking to simple scalars is a good idea.
 
-= escape
+= escape and unescape
 
-This should be a coderef that will escape each part of the path before joining
-them with C<join>.  It will be called like this:
+These coderefs are used to escape and path parts so that they can be split and
+joined without ambiguity.  The callbacks will be called like this:
 
-  my $escaped_part = do {
+  my $result = do {
     local $_ = $path_part;
-    $store->$escape( $path_part );
+    $store->$callback( $path_part );
   }
 
-The default escape routine URI encodes non-word characters.
+The default escape routine uses URI-like encoding on non-word characters.
 
-= separator
+= join, split, and separator
 
-String to join path segments together with; defaults to either the first
-character of the C<< escape >> option (if given) or '.'.
+The C<join> coderef is used to join pre-escaped path parts.  C<split> is used
+to split up a complete name before unescaping the parts.
+
+By default, they will use a simple perl join and split on the character given
+in the C<separator> option.
 
 = exists
 
-Coderef that describes how to see if a given parameter name (C<< separator
->>-joined path) exists.  The default is to treat the object like a hashref and
-look inside it.
+This is a coderef used to check whether a given parameter name exists.  It will
+be called as a method on the Data::Hive::Store::Param object with the path name
+as its argument.
+
+The default behavior gets a list of all parameters and checks whether the given
+name appears in it.
 
 = delete
 
-Coderef that describes how to delete a given parameter name.  The default is to
-treat the object like a hashref and call C<delete> on it.
+This is a coderef used to delete the value for a path from the hive.  It will
+be called as a method on the Data::Hive::Store::Param object with the path name
+as its argument.
+
+The default behavior is to call the C<delete> method on the object providing
+the C<param> method.
 
 =end :list
 
 =cut
-
-sub _escape {
-  my ($self, $str) = @_;
-
-  $str =~ s/([^a-z0-9_])/sprintf("%%%x", ord($1))/gie;
-
-  return $str;
-}
-
-sub _unescape {
-  my ($self, $str) = @_;
-
-  $str =~ s/%([0-9a-f]{2})/chr(hex($1))/ge;
-
-  return $str;
-}
 
 sub escaped_path {
   my ($self, $path) = @_;
@@ -98,6 +92,8 @@ sub escaped_path {
 
   return $self->$join([ map {; $self->$escape($_) } @$path ]);
 }
+
+sub name { $_[0]->escaped_path($_[1]) }
 
 sub parsed_path {
   my ($self, $str) = @_;
@@ -117,8 +113,17 @@ sub new {
 
     separator => $arg->{separator} || '.',
 
-    escape    => $arg->{escape}   || \&_escape,
-    unescape  => $arg->{unescape} || \&_unescape,
+    escape    => $arg->{escape}   || sub  {
+      my ($self, $str) = @_;
+      $str =~ s/([^a-z0-9_])/sprintf("%%%x", ord($1))/gie;
+      return $str;
+    },
+
+    unescape  => $arg->{unescape} || sub {
+      my ($self, $str) = @_;
+      $str =~ s/%([0-9a-f]{2})/chr(hex($1))/ge;
+      return $str;
+    },
 
     join      => $arg->{join}  || sub { join $_[0]{separator}, @{$_[1]} },
     split     => $arg->{split} || sub { split /\Q$_[0]{separator}/, $_[1] },
@@ -146,7 +151,7 @@ sub param_store { $_[0]{obj} }
 sub _param {
   my $self = shift;
   my $meth = $self->{method};
-  my $path = $self->escaped_path(shift);
+  my $path = $self->name(shift);
   return $self->param_store->$meth($path, @_);
 }
 
@@ -160,15 +165,10 @@ sub set {
   return $self->_param($path => $val);
 }
  
-sub name {
-  my ($self, $path) = @_;
-  return $self->escaped_path($path);
-}
-
 sub exists {
   my ($self, $path) = @_;
   my $code = $self->{exists};
-  my $key  = $self->escaped_path($path);
+  my $key  = $self->name($path);
 
   return $self->$code($key);
 }
@@ -176,7 +176,7 @@ sub exists {
 sub delete {
   my ($self, $path) = @_;
   my $code = $self->{delete};
-  my $key  = $self->escaped_path($path);
+  my $key  = $self->name($path);
 
   return $self->$code($key);
 }
