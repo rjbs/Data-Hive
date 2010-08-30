@@ -106,17 +106,9 @@ you call an all-uppercase method.  These are detailed below.
 
 These methods are thin wrappers around required modules in L<Data::Hive::Store>
 subclasses.  These methods all basically call a method on the store with the
-same (but lowercased) name and pass it the hive's path:
+same (but lowercased) name and pass it the hive's path.
 
-=for :list
-* EXISTS
-* GET
-* SET
-* NAME
-* DELETE
-* KEYS
-
-=head2 NEW
+=head3 NEW
 
 This constructs a new hive object.  Note that the name is C<NEW> and not
 C<new>!  The C<new> method is just another method to pick a hive path part.
@@ -173,7 +165,7 @@ sub NEW {
   return $self;
 }
 
-=head2 GET
+=head3 GET
 
   my $value = $hive->some->path->GET( $default );
 
@@ -183,7 +175,7 @@ path and a default has been supplied, the default will be returned instead.
 This method may also be called as C<GETSTR> or C<GETNUM> for backward
 compatibility, but this is deprecated and will be removed in a future release.
 
-=head3 overloading
+=head4 overloading
 
 Hives are overloaded for stringification and numification so that they behave
 like their value when used without an explicit C<GET>.  This behavior is
@@ -220,7 +212,7 @@ sub GETSTR {
   shift->GET(@_);
 }
 
-=head2 SET
+=head3 SET
 
   $hive->some->path->SET(10);
 
@@ -235,7 +227,7 @@ sub SET {
   return $self->STORE->set($self->{path}, @_);
 }
 
-=head2 EXISTS
+=head3 EXISTS
 
   if ($hive->foo->bar->EXISTS) { ... }
 
@@ -248,7 +240,7 @@ sub EXISTS {
   return $self->STORE->exists($self->{path});
 }
 
-=head2 DELETE
+=head3 DELETE
 
   $hive->foo->bar->DELETE;
 
@@ -262,7 +254,19 @@ sub DELETE {
   return $self->STORE->delete($self->{path});
 }
 
-=head2 KEYS
+=head3 DELETE_ALL
+
+This method behaves like C<DELETE>, but all values for paths below the current
+one will also be deleted.
+
+=cut
+
+sub DELETE_ALL {
+  my $self = shift;
+  return $self->STORE->delete_all($self->{path});
+}
+
+=head3 KEYS
 
   my @keys = $hive->KEYS;
 
@@ -293,7 +297,7 @@ sub KEYS {
   return $self->STORE->keys($self->{path});
 }
 
-=head2 HIVE
+=head3 HIVE
 
   $hive->HIVE('foo');   #  equivalent to $hive->foo
 
@@ -331,7 +335,7 @@ sub HIVE {
   });
 }
 
-=head2 NAME
+=head3 NAME
 
 This method returns a name that can be used to represent the hive's path.  This
 name is B<store-dependent>, and should not be relied upon if the store may
@@ -344,7 +348,7 @@ sub NAME {
   return $self->STORE->name($self->{path});
 }
 
-=head2 ROOT
+=head3 ROOT
 
 This returns a Data::Hive object for the root of the hive.
 
@@ -359,26 +363,36 @@ sub ROOT {
   });
 }
 
-=head2 SAVE
+=head3 SAVE
 
-This method, if called on the root of the hive, tells the hive store to save
-its contents.  For many stores, this does nothing.  For hive stores that are
+This method tells the hive store to save the value (or lack thereof) for the
+current path.  For many stores, this does nothing.  For hive stores that are
 written out only on demand, this method must be called.
-
-At present, calling this method on a non-root Data::Hive object will warn
-unconditionally, but still save.  This may change in the future.
 
 =cut
 
 sub SAVE {
   my ($self) = @_;
 
-  Carp::carp("SAVE called on non-root Data::Hive") if @{ $self->{path} };
-
-  $self->STORE->save;
+  $self->STORE->save($self->{path});
 }
 
-=head2 STORE
+=head3 SAVE_ALL
+
+This method tells the hive store to save the value (or lack thereof) for the
+current path and all paths beneath it.  For many stores, this does nothing.
+For hive stores that are written out only on demand, this method must be
+called.
+
+=cut
+
+sub SAVE_ALL {
+  my ($self) = @_;
+
+  $self->STORE->save_all($self->{path});
+}
+
+=head3 STORE
 
 This method returns the storage driver being used by the hive.
 
@@ -397,7 +411,7 @@ sub AUTOLOAD {
 
   return if $method eq 'DESTROY';
 
-  if ($method =~ /^[A-Z]+$/) {
+  if ($method =~ /^[A-Z_]+$/) {
     Carp::croak("all-caps method names are reserved: '$method'");
   }
 

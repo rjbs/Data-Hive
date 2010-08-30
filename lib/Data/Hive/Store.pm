@@ -65,4 +65,26 @@ BEGIN {
 
 sub save {}
 
+sub save_all {
+  my ($self, $path) = @_;
+
+  $self->save;
+  for my $key ($self->keys($path)) {
+    $self->save_all([ @$path, $key ]);
+  }
+
+  return;
+}
+
+sub delete_all {
+  my ($self, $path) = @_;
+
+  $self->delete($path);
+  for my $key ($self->keys($path)) {
+    $self->delete_all([ @$path, $key ]);
+  }
+
+  return;
+}
+
 1;

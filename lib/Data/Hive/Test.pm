@@ -166,6 +166,42 @@ sub test_new_hive {
       '2D',
       "we can get back to the root easily with ROOT",
     );
+
+    $hive->doomed->alpha->branch->value->SET(1);
+    $hive->doomed->bravo->branch->value->SET(1);
+
+    is_deeply(
+      [ sort $hive->doomed->KEYS ],
+      [ qw(alpha bravo) ],
+      "created hive with two subhives",
+    );
+
+    $hive->doomed->alpha->DELETE_ALL;
+
+    is_deeply(
+      [ sort $hive->doomed->KEYS ],
+      [ qw(bravo) ],
+      "doing a DELETE_ALL gets rid of all deeper values",
+    );
+
+    is(
+      $hive->doomed->alpha->branch->value->GET,
+      undef,
+      "the deeper value is now undef",
+    );
+
+    ok(
+      ! $hive->doomed->alpha->branch->value->EXISTS,
+      "the deeper value does not exist",
+    );
+
+    is(
+      $hive->doomed->bravo->branch->value->GET,
+      1,
+      "the deep value on another branch is not gone",
+    );
+
+      $hive->doomed->bravo->branch->value->SET(1),
   };
 
   return $passed ? $hive : ();
