@@ -3,8 +3,6 @@ use warnings;
 package Data::Hive::Store::Param;
 # ABSTRACT: CGI::param-like store for Data::Hive
 
-use URI::Escape ();
-
 =head1 DESCRIPTION
 
 This hive store will soon be overhauled.
@@ -33,6 +31,16 @@ Several interesting arguments can be passed in a hashref after the first
 = method
 
 Use a different method name on the object (default is 'param').
+
+This method should have the "usual" behavior for a C<param> method:
+
+=for :list
+* calling C<< $obj->param >> with no arguments returns all param names
+* calling C<< $obj->param($name) >> returns the value for that name
+* calling C<< $obj->param($name, $value) >> sets the value for the name
+
+The Param store does not check the types of values, but for interoperation with
+other stores, sticking to simple scalars is a good idea.
 
 = escape
 
@@ -77,7 +85,9 @@ sub _escape {
 sub _unescape {
   my ($self, $str) = @_;
 
-  URI::Escape::uri_unescape($str);
+  $str =~ s/%([0-9a-f]{2})/chr(hex($1))/ge;
+
+  return $str;
 }
 
 sub escaped_path {
@@ -193,14 +203,5 @@ sub keys {
 
   return keys %is_key;
 }
-
-=head1 BUGS
-
-The interaction between escapes and separators is not very well formalized or
-tested.  If you change things much, you'll probably be frustrated.
-
-Fixes and/or tests would be lovely.
-
-=cut
 
 1;
