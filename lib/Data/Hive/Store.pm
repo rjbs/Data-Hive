@@ -50,9 +50,9 @@ Delete the given path from the store.  Return the previous value, if any.
 
   my @keys = $store->keys(\@path, \%opt);
 
-This returns a list of next-level path elements that exist.  For more
-information on the expected behavior, see the L<KEYS method|Data:Hive/keys> in
-Data::Hive.
+This returns a list of next-level path elements that lead toward existing
+values.  For more information on the expected behavior, see the L<KEYS
+method|Data:Hive/keys> in Data::Hive.
 
 =cut
 

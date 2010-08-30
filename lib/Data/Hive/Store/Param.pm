@@ -42,25 +42,11 @@ This method should have the "usual" behavior for a C<param> method:
 The Param store does not check the types of values, but for interoperation with
 other stores, sticking to simple scalars is a good idea.
 
-= escape and unescape
+= path_packer
 
-These coderefs are used to escape and path parts so that they can be split and
-joined without ambiguity.  The callbacks will be called like this:
+This is an object providing the L<Data::Hive::PathPacker> interface.  It will
+convert a string to a path (arrayref) or the reverse.
 
-  my $result = do {
-    local $_ = $path_part;
-    $store->$callback( $path_part );
-  }
-
-The default escape routine uses URI-like encoding on non-word characters.
-
-= join, split, and separator
-
-The C<join> coderef is used to join pre-escaped path parts.  C<split> is used
-to split up a complete name before unescaping the parts.
-
-By default, they will use a simple perl join and split on the character given
-in the C<separator> option.
 
 = exists
 
@@ -84,60 +70,32 @@ the C<param> method.
 
 =cut
 
-sub escaped_path {
-  my ($self, $path) = @_;
+sub path_packer { $_[0]{path_packer} }
 
-  my $escape = $self->{escape};
-  my $join   = $self->{join};
-
-  return $self->$join([ map {; $self->$escape($_) } @$path ]);
-}
-
-sub name { $_[0]->escaped_path($_[1]) }
-
-sub parsed_path {
-  my ($self, $str) = @_;
-
-  my $split    = $self->{split};
-  my $unescape = $self->{unescape};
-
-  return [ map {; $self->$unescape($_) } $self->$split($str) ];
-}
+sub name { $_[0]->path_packer->pack_path($_[1]) }
 
 sub new {
   my ($class, $obj, $arg) = @_;
   $arg ||= {};
 
   my $guts = {
-    obj       => $obj,
+    obj         => $obj,
 
-    separator => $arg->{separator} || '.',
-
-    escape    => $arg->{escape}   || sub  {
-      my ($self, $str) = @_;
-      $str =~ s/([^a-z0-9_])/sprintf("%%%x", ord($1))/gie;
-      return $str;
+    path_packer => $arg->{path_packer} || do {
+      require Data::Hive::PathPacker::Basic;
+      Data::Hive::PathPacker::Basic->new;
     },
 
-    unescape  => $arg->{unescape} || sub {
-      my ($self, $str) = @_;
-      $str =~ s/%([0-9a-f]{2})/chr(hex($1))/ge;
-      return $str;
-    },
+    method      => $arg->{method} || 'param',
 
-    join      => $arg->{join}  || sub { join $_[0]{separator}, @{$_[1]} },
-    split     => $arg->{split} || sub { split /\Q$_[0]{separator}/, $_[1] },
-
-    method    => $arg->{method} || 'param',
-
-    exists    => $arg->{exists} || sub {
+    exists      => $arg->{exists} || sub {
       my ($self, $key) = @_;
       my $method = $self->{method};
       my $exists = grep { $key eq $_ } $self->param_store->$method;
       return ! ! $exists;
     },
 
-    delete    => $arg->{delete} || sub {
+    delete      => $arg->{delete} || sub {
       my ($self, $key) = @_;
       $self->param_store->delete($key);
     },
@@ -190,7 +148,7 @@ sub keys {
   my %is_key;
 
   PATH: for my $name (@names) {
-    my $this_path = $self->parsed_path($name);
+    my $this_path = $self->path_packer->unpack_path($name);
 
     next unless @$this_path > @$path;
 
