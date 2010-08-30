@@ -1,13 +1,13 @@
 use strict;
 use warnings;
 package Data::Hive::Store::Hash;
-# ABSTRACT: store a hive in nested hashrefs
+# ABSTRACT: store a hive in a flat hashref
 
 =head1 DESCRIPTION
 
-This is a simple store, primarily for testing, that will store hives in nested
-hashrefs.  All hives are represented as hashrefs, and their values are stored
-in the entry for the empty string.
+This is a simple store, primarily for testing, that will store hives in a flat
+hashref.  Paths are packed into strings and used as keys.  The structure does
+not recurse -- for that, see L<Data::Hive::Store::Hash::Nested>.
 
 So, we could do this:
 
@@ -21,43 +21,45 @@ So, we could do this:
   $hive->foo->SET(1);
   $hive->foo->bar->baz->SET(2);
 
-We would end up with C<$href> containing:
+We would end up with C<$href> containing something like:
 
   {
-    foo => {
-      ''  => 1,
-      bar => {
-        baz => {
-          '' => 2,
-        },
-      },
-    },
+    foo => 1,
+    'foo.bar.baz' => 2
   }
-
-Using empty keys results in a bigger, uglier dump, but allows a given hive to
-contain both a value and subhives.  B<Please note> that this is different
-behavior compared with earlier releases, in which empty keys were not used and
-it was not legal to have a value and a hive at a given path.  It is possible,
-although fairly unlikely, that this format will change again.  The Hash store
-should generally be used for testing things that use a hive, as opposed for
-building hashes that will be used for anything else.
 
 =method new
 
-  my $store = Data::Hive::Store::Hash->new(\%hash);
+  my $store = Data::Hive::Store::Hash->new(\%hash, \%arg);
 
 The only argument expected for C<new> is a hashref, which is the hashref in
 which hive entries are stored.
 
 If no hashref is provided, a new, empty hashref will be used.
 
+The extra arguments may include:
+
+=for :list
+= path_packer
+A L<Data::Hive::PathPacker>-like object used to convert between paths
+(arrayrefs) and hash keys.
+
 =cut
 
 sub new {
-  my ($class, $href) = @_;
-  $href = {} unless defined $href;
+  my ($class, $href, $arg) = @_;
+  $href = {} unless $href;
+  $arg  = {} unless $arg;
 
-  return bless { store => $href } => $class;
+  my $guts = {
+    store       => $href,
+    path_packer => $arg->{path_packer} || do {
+      require Data::Hive::PathPacker::Basic;
+      Data::Hive::PathPacker::Basic->new;
+    },
+  };
+
+  return bless $guts => $class;
 }
 
 =method hash_store
@@ -67,9 +69,8 @@ alter its contents!
 
 =cut
 
-sub hash_store {
-  $_[0]->{store}
-}
+sub hash_store  { $_[0]->{store} }
+sub path_packer { $_[0]->{path_packer} }
 
 sub _die {
   require Carp::Clan;
@@ -77,157 +78,53 @@ sub _die {
   croak(shift);
 }
 
-my $BREAK = "BREAK\n";
-
-# Wow, this is quite a little machine!  Here's a slightly simplified overview
-# of what it does:  -- rjbs, 2010-08-27
-#
-# As long as cond->(\@remaining_path) is true, execute step->($next,
-# $current_hashref, \@remaining_path)
-#
-# If it dies with $BREAK, stop looping and return.  Once the cond returns
-# false, return end->($current_hashref, \@remaining_path)
-sub _descend {
-  my ($self, $orig_path, $arg) = @_;
-  my @path = @$orig_path;
-
-  $arg ||= {};
-  $arg->{step} or die "step is required";
-  $arg->{cond} ||= sub { @{ shift() } };
-  $arg->{end}  ||= sub { $_[0] };
-
-  my $node = $self->hash_store;
-
-  while ($arg->{cond}->(\@path)) {
-    my $seg = shift @path;
-
-    {
-      local $SIG{__DIE__};
-      eval { $arg->{step}->($seg, $node, \@path) };
-    }
-
-    return if $@ and $@ eq $BREAK;
-    die $@ if $@;
-    $node = $node->{$seg} ||= {};
-  }
-
-  return $arg->{end}->($node, \@path);
-}
-
 sub get {
   my ($self, $path) = @_;
-  return $self->_descend(
-    $path, {
-      end  => sub { $_[0]->{''} },
-      step => sub {
-        my ($seg, $node) = @_;
-
-        if (defined $node and not ref $node) {
-          # We found a bogus entry in the store! -- rjbs, 2010-08-27
-          _die("can't get key '$seg' of non-ref value '$node'");
-        }
-
-        die $BREAK unless exists $node->{$seg};
-      }
-    }
-  );
+  return $self->hash_store->{ $self->name($path) };
 }
 
 sub set {
   my ($self, $path, $value) = @_;
-  return $self->_descend(
-    $path, {
-      step => sub {
-        my ($seg, $node, $path) = @_;
-        if (exists $node->{$seg} and not ref $node->{$seg}) {
-          _die("can't overwrite existing non-ref value: '$node->{$seg}'");
-        }
-      },
-      cond => sub { @{ shift() } > 1 },
-      end  => sub {
-        my ($node, $path) = @_;
-        $node->{$path->[0]}{''} = $value;
-      },
-    },
-  );
+  $self->hash_store->{ $self->name($path) } = $value;
 }
-
-=method name
-
-The name returned by the Hash store is a string, potentially suitable for
-eval-ing, describing a hash dereference of a variable called C<< $STORE >>.
-
-  "$STORE->{foo}->{bar}"
-
-This is probably not very useful.
-
-=cut
 
 sub name {
   my ($self, $path) = @_;
-  return join '->', '$STORE', map { "{'$_'}" } @$path;
+  $self->path_packer->pack_path($path);
 }
 
 sub exists {
   my ($self, $path) = @_;
-  return $self->_descend(
-    $path, { 
-      step => sub {
-        my ($seg, $node) = @_;
-        die $BREAK unless exists $node->{$seg};
-      },
-      end  => sub { return exists $_[0]->{''}; },
-    },
-  );
+  exists $self->hash_store->{ $self->name($path) };
 }  
 
 sub delete {
   my ($self, $path) = @_;
 
-  return $self->_descend(
-    $path, {
-      step => sub {
-        my ($seg, $node) = @_;
-        die $BREAK unless exists $node->{$seg};
-      },
-      cond => sub { @{ shift() } > 1 },
-      end  => sub {
-        my ($node, $final_path) = @_;
-        my $this = $node->{ $final_path->[0] };
-        my $rv = delete $this->{''};
-
-        # Cleanup empty trees after deletion!  It would be convenient to have
-        # ->_ascend, but I'm not likely to bother with writing it just yet.
-        # -- rjbs, 2010-08-27
-        $self->_descend(
-          $path, {
-            step => sub {
-              my ($seg, $node) = @_;
-              return if keys %{ $node->{$seg} };
-              delete $node->{$seg};
-              die $BREAK;
-            },
-          }
-        );
-
-        return $rv;
-      },
-    },
-  );
+  delete $self->hash_store->{ $self->name($path) };
 }
 
 sub keys {
   my ($self, $path) = @_;
 
-  return $self->_descend($path, {
-    step => sub {
-      my ($seg, $node) = @_;
-      die $BREAK unless exists $node->{$seg};
-    },
-    end  => sub {
-      return grep { length } keys %{ $_[0] };
-    },
-  });
+  my $method = $self->{method};
+  my @names  = keys %{ $self->hash_store };
+
+  my %is_key;
+
+  PATH: for my $name (@names) {
+    my $this_path = $self->path_packer->unpack_path($name);
+
+    next unless @$this_path > @$path;
+
+    for my $i (0 .. $#$path) {
+      next PATH unless $this_path->[$i] eq $path->[$i];
+    }
+
+    $is_key{ $this_path->[ $#$path + 1 ] } = 1;
+  }
+
+  return keys %is_key;
 }
 
 1;
