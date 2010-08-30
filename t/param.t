@@ -31,10 +31,7 @@ Data::Hive::Test->test_new_hive(
   "basic Param backed hive",
   {
     store_class => 'Param',
-    store_args  => [ Infostore->new, {
-      method    => 'info',
-      separator => '/',
-    } ],
+    store_args  => [ Infostore->new, { method  => 'info' } ],
   },
 );
 

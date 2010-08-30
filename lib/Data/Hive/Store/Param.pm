@@ -36,9 +36,15 @@ Use a different method name on the object (default is 'param').
 
 = escape
 
-List of characters to escape (via URI encoding) in keys.
+This should be a coderef that will escape each part of the path before joining
+them with C<join>.  It will be called like this:
 
-Defaults to the C<< separator >>.
+  my $escaped_part = do {
+    local $_ = $path_part;
+    $store->$escape( $path_part );
+  }
+
+The default escape routine URI encodes non-word characters.
 
 = separator
 
@@ -62,14 +68,34 @@ treat the object like a hashref and call C<delete> on it.
 
 sub _escape {
   my ($self, $str) = @_;
-  my $escape = $self->{escape} or return $str;
-  $str =~ s/([\Q$escape\E%])/sprintf("%%%x", ord($1))/ge;
+
+  $str =~ s/([^a-z0-9_])/sprintf("%%%x", ord($1))/gie;
+
   return $str;
 }
 
-sub _path {
+sub _unescape {
+  my ($self, $str) = @_;
+
+  URI::Escape::uri_unescape($str);
+}
+
+sub escaped_path {
   my ($self, $path) = @_;
-  return join $self->{separator}, map { $self->_escape($_) } @$path;
+
+  my $escape = $self->{escape};
+  my $join   = $self->{join};
+
+  return $self->$join([ map {; $self->$escape($_) } @$path ]);
+}
+
+sub parsed_path {
+  my ($self, $str) = @_;
+
+  my $split    = $self->{split};
+  my $unescape = $self->{unescape};
+
+  return [ map {; $self->$unescape($_) } $self->$split($str) ];
 }
 
 sub new {
@@ -78,29 +104,40 @@ sub new {
 
   my $guts = {
     obj       => $obj,
-    escape    => $arg->{escape} || $arg->{separator} || '.',
-    separator => $arg->{separator} || substr($arg->{escape}, 0, 1),
+
+    separator => $arg->{separator} || '.',
+
+    escape    => $arg->{escape}   || \&_escape,
+    unescape  => $arg->{unescape} || \&_unescape,
+
+    join      => $arg->{join}  || sub { join $_[0]{separator}, @{$_[1]} },
+    split     => $arg->{split} || sub { split /\Q$_[0]{separator}/, $_[1] },
+
     method    => $arg->{method} || 'param',
+
     exists    => $arg->{exists} || sub {
       my ($self, $key) = @_;
       my $method = $self->{method};
-      my $exists = grep { $key eq $_ } $self->{obj}->$method;
+      my $exists = grep { $key eq $_ } $self->param_store->$method;
       return ! ! $exists;
     },
+
     delete    => $arg->{delete} || sub {
       my ($self, $key) = @_;
-      $self->{obj}->delete($key);
+      $self->param_store->delete($key);
     },
   };
 
   return bless $guts => $class;
 }
 
+sub param_store { $_[0]{obj} }
+
 sub _param {
   my $self = shift;
   my $meth = $self->{method};
-  my $path = $self->_path(shift);
-  return $self->{obj}->$meth($path, @_);
+  my $path = $self->escaped_path(shift);
+  return $self->param_store->$meth($path, @_);
 }
 
 sub get {
@@ -115,20 +152,21 @@ sub set {
  
 sub name {
   my ($self, $path) = @_;
-  return $self->_path($path);
+  return $self->escaped_path($path);
 }
 
 sub exists {
   my ($self, $path) = @_;
   my $code = $self->{exists};
-  my $key = $self->_path($path);
+  my $key  = $self->escaped_path($path);
+
   return $self->$code($key);
 }
 
 sub delete {
   my ($self, $path) = @_;
   my $code = $self->{delete};
-  my $key = $self->_path($path);
+  my $key  = $self->escaped_path($path);
 
   return $self->$code($key);
 }
@@ -137,17 +175,23 @@ sub keys {
   my ($self, $path) = @_;
 
   my $method = $self->{method};
-  my @names  = $self->{obj}->$method;
+  my @names  = $self->param_store->$method;
 
-  my $name = $self->_path($path);
+  my %is_key;
 
-  my $sep = $self->{separator};
+  PATH: for my $name (@names) {
+    my $this_path = $self->parsed_path($name);
 
-  my $start = length $name ? "$name$sep" : q{};
-  my %seen  = map { /\A\Q$start\E(.+?)(\z|\Q$sep\E)/ ? ($1 => 1) : () } @names;
+    next unless @$this_path > @$path;
 
-  my @keys = map { URI::Escape::uri_unescape($_) } keys %seen;
-  return @keys;
+    for my $i (0 .. $#$path) {
+      next PATH unless $this_path->[$i] eq $path->[$i];
+    }
+
+    $is_key{ $this_path->[ $#$path + 1 ] } = 1;
+  }
+
+  return keys %is_key;
 }
 
 =head1 BUGS
