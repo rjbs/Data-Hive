@@ -45,8 +45,8 @@ other stores, sticking to simple scalars is a good idea.
 = path_packer
 
 This is an object providing the L<Data::Hive::PathPacker> interface.  It will
-convert a string to a path (arrayref) or the reverse.
-
+convert a string to a path (arrayref) or the reverse.  It defaults to a
+L<Data::Hive::PathPacker::Strict>.
 
 = exists
 
@@ -82,8 +82,8 @@ sub new {
     obj         => $obj,
 
     path_packer => $arg->{path_packer} || do {
-      require Data::Hive::PathPacker::Basic;
-      Data::Hive::PathPacker::Basic->new;
+      require Data::Hive::PathPacker::Strict;
+      Data::Hive::PathPacker::Strict->new;
     },
 
     method      => $arg->{method} || 'param',

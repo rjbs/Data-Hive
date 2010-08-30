@@ -54,8 +54,8 @@ sub new {
   my $guts = {
     store       => $href,
     path_packer => $arg->{path_packer} || do {
-      require Data::Hive::PathPacker::Basic;
-      Data::Hive::PathPacker::Basic->new;
+      require Data::Hive::PathPacker::Strict;
+      Data::Hive::PathPacker::Strict->new;
     },
   };
 

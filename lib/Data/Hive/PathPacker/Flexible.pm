@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-package Data::Hive::PathPacker::Basic;
+package Data::Hive::PathPacker::Flexible;
 
 =begin :list
 

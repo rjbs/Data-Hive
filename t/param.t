@@ -7,7 +7,7 @@ use Test::More;
 
 use Data::Hive;
 use Data::Hive::Store::Param;
-use Data::Hive::PathPacker::Basic;
+use Data::Hive::PathPacker::Flexible;
 
 use Data::Hive::Test;
 
@@ -42,7 +42,7 @@ my $hive = Data::Hive->NEW({
   store_class => 'Param',
   store_args  => [ $infostore, {
     method      => 'info',
-    path_packer => Data::Hive::PathPacker::Basic->new({ separator => '/' }),
+    path_packer => Data::Hive::PathPacker::Flexible->new({ separator => '/' }),
   } ],
 });
 

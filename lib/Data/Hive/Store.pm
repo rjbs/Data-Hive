@@ -63,4 +63,6 @@ BEGIN {
   }
 }
 
+sub save {}
+
 1;
