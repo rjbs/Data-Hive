@@ -344,6 +344,40 @@ sub NAME {
   return $self->STORE->name($self->{path});
 }
 
+=head2 ROOT
+
+This returns a Data::Hive object for the root of the hive.
+
+=cut
+
+sub ROOT {
+  my $self = shift;
+
+  return $self->NEW({
+    %$self,
+    path => [ ],
+  });
+}
+
+=head2 SAVE
+
+This method, if called on the root of the hive, tells the hive store to save
+its contents.  For many stores, this does nothing.  For hive stores that are
+written out only on demand, this method must be called.
+
+At present, calling this method on a non-root Data::Hive object will warn
+unconditionally, but still save.  This may change in the future.
+
+=cut
+
+sub SAVE {
+  my ($self) = @_;
+
+  Carp::carp("SAVE called on non-root Data::Hive") if @{ $self->{path} };
+
+  $self->STORE->save;
+}
+
 =head2 STORE
 
 This method returns the storage driver being used by the hive.

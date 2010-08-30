@@ -160,6 +160,12 @@ sub test_new_hive {
       [ qw(empty one two undef zero) ],
       "in the end, we have the right top-level keys",
     );
+
+    is(
+      $hive->two->deep->fake->whatever->ROOT->two->deep->GET,
+      '2D',
+      "we can get back to the root easily with ROOT",
+    );
   };
 
   return $passed ? $hive : ();
