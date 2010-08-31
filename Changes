@@ -1,6 +1,19 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+          added ROOT, SAVE, SAVE_ALL, DELETE_ALL
+
+          old Hash store is now Hash::Nested; added new, flat Hash store
+
+          new Hash store and Param both rely on Data::Hive::PathPacker
+
+          bugfixes in cleaning up after deletion in nested hashes
+
+          deprecate overload and GETNUM and GETSTR behaviors
+
+          added Data::Hive::Test for testing Store implementations
+
+          documentation and test improvements
 
 1.000     2010-08-27 21:48:58 America/New_York
           significant documentation overhaul
