@@ -34,4 +34,27 @@ ok(
   "we can't make a hive with both a store and a store_class",
 );
 
+for my $bad (
+  [ '(undef)'      => undef ],
+  [ 'empty string' => ''    ],
+  [ 'array ref'    => []    ],
+) {
+  my ($str, $val) = @$bad;
+
+  like(
+    exception {
+      my $hive = Data::Hive->NEW({ store_class => 'Hash' });
+      $hive->HIVE($val);
+    },
+    qr/illegal.+path part/,
+    "$str is not a valid path part",
+  );
+}
+
+like(
+  exception { Data::Hive->NEW({ store_class => 'Hash' })->DOESNT_EXIST },
+  qr/all-caps method names are reserved/,
+  'all-caps method names are reserved',
+);
+
 done_testing;

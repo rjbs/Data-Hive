@@ -73,12 +73,6 @@ alter its contents!
 sub hash_store  { $_[0]->{store} }
 sub path_packer { $_[0]->{path_packer} }
 
-sub _die {
-  require Carp::Clan;
-  Carp::Clan->import('^Data::Hive($|::)');
-  croak(shift);
-}
-
 sub get {
   my ($self, $path) = @_;
   return $self->hash_store->{ $self->name($path) };

@@ -141,12 +141,13 @@ C<new> method.
 =cut
 
 sub NEW {
-  my ($class, $arg) = @_;
+  my ($invocant, $arg) = @_;
   $arg ||= {};
 
   my @path = @{ $arg->{path} || [] };
 
-  my $self = bless { path => \@path } => ref($class) || $class;
+  my $class = ref $invocant ? ref $invocant : $invocant;
+  my $self = bless { path => \@path } => $class;
 
   if ($arg->{store_class}) {
     die "don't use 'store' with 'store_class' and 'store_args'"

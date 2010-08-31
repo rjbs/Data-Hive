@@ -1,6 +1,20 @@
 use strict;
 use warnings;
 package Data::Hive::PathPacker::Flexible;
+use base 'Data::Hive::PathPacker';
+# ABSTRACT: a path packer that can be customized with callbacks
+
+=head1 DESCRIPTION
+
+This class provides the Data::Hive::PathPacker interface, and the way in which
+paths are packed and unpacked can be defined by callbacks set during
+initialization.
+
+=method new
+
+  my $path_packer = Data::Hive::PathPacker::Flexible->new( \%arg );
+
+The valid arguments are:
 
 =begin :list
 

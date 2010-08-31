@@ -58,12 +58,12 @@ is $hive->bar->baz->NAME, 'bar/baz', 'NAME';
 ok ! $hive->not->EXISTS, "non-existent key doesn't EXISTS";
 ok   $hive->foo->EXISTS, "existing key does EXISTS";
 
-$hive->ITEM("and/or")->SET(17);
+$hive->HIVE("and/or")->SET(17);
 
 is_deeply $infostore, { foo => 3, 'bar/baz' => 2, 'and%2for' => 17 },
   'SET (with escape)';
 
-is $hive->ITEM("and/or")->GET, 17, 'GET (with escape)';
+is $hive->HIVE("and/or")->GET, 17, 'GET (with escape)';
 
 is $hive->bar->baz->DELETE, 2, "delete returns old value";
 is_deeply $infostore, { foo => 3, 'and%2for' => 17 }, "delete removed item";

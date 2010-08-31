@@ -9,6 +9,14 @@ use Data::Hive::Test;
 
 use Test::More 0.88;
 
+use Try::Tiny;
+
+sub exception (&) {
+  my ($code) = @_;
+
+  return try { $code->(); return } catch { return $_ };
+}
+
 Data::Hive::Test->test_new_hive(
   'basic hash store',
   { store => Data::Hive::Store::Hash->new },
@@ -152,6 +160,12 @@ is_deeply(
     [ sort $hive->foo->bar->KEYS ],
     [ qw(baz) ],
     "get the KEYS under foo/bar",
+  );
+
+  like(
+    exception { $hive->HIVE('not.legal')->GET },
+    qr/illegal.+path part/,
+    "we can't use the delimiter in a path part with strict packer",
   );
 }
 

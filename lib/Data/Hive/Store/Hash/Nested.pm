@@ -72,12 +72,6 @@ sub hash_store {
   $_[0]->{store}
 }
 
-sub _die {
-  require Carp::Clan;
-  Carp::Clan->import('^Data::Hive($|::)');
-  croak(shift);
-}
-
 my $BREAK = "BREAK\n";
 
 # Wow, this is quite a little machine!  Here's a slightly simplified overview
@@ -160,7 +154,8 @@ eval-ing, describing a hash dereference of a variable called C<< $STORE >>.
 
   "$STORE->{foo}->{bar}"
 
-This is probably not very useful.
+This is probably not very useful.  It might be replaced with something else in
+the future.
 
 =cut
 

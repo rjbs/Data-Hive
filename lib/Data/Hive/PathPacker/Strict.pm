@@ -1,32 +1,24 @@
 use strict;
 use warnings;
 package Data::Hive::PathPacker::Strict;
+use base 'Data::Hive::PathPacker';
+# ABSTRACT: a simple, strict path packer
 
 use Carp ();
 
-=begin :list
+=head1 DESCRIPTION
 
-= escape and unescape
+The Strict path packer is the simplest useful implementation of
+L<Data::Hive::PathPacker>.  It joins path parts together with a fixed string
+and splits them apart on the same string.  If the fixed string occurs any path
+part, an exception is thrown.
 
-These coderefs are used to escape and path parts so that they can be split and
-joined without ambiguity.  The callbacks will be called like this:
+=method new
 
-  my $result = do {
-    local $_ = $path_part;
-    $store->$callback( $path_part );
-  }
+  my $packer = Data::Hive::PathPacker::Strict->new( \%arg );
 
-The default escape routine uses URI-like encoding on non-word characters.
-
-= join, split, and separator
-
-The C<join> coderef is used to join pre-escaped path parts.  C<split> is used
-to split up a complete name before unescaping the parts.
-
-By default, they will use a simple perl join and split on the character given
-in the C<separator> option.
-
-=end :list
+The only valid argument is C<separator>, which is the string used to join path
+parts.  It defaults to a single period.
 
 =cut
 
