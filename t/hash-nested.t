@@ -151,4 +151,21 @@ is_deeply(
   );
 }
 
+subtest 'start with existing old-style hash' => sub {
+  my $hive  = Data::Hive->NEW({
+    store_class => 'Hash::Nested',
+    store_args  => [ {
+      foo => { bar => 10 },
+    } ],
+  });
+
+  is($hive->foo->bar->GET, 10, 'we can access old-style hash stores');
+
+  is_deeply(
+    $hive->STORE->hash_store,
+    { foo => { bar => { '' => 10 } } },
+    "...and we auto-upgrade them in place",
+  );
+};
+
 done_testing;

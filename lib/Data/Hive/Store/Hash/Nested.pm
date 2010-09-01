@@ -117,12 +117,9 @@ sub get {
       step => sub {
         my ($seg, $node) = @_;
 
-        if (defined $node and not ref $node) {
-          # We found a bogus entry in the store! -- rjbs, 2010-08-27
-          _die("can't get key '$seg' of non-ref value '$node'");
-        }
-
         die $BREAK unless exists $node->{$seg};
+
+        $node->{$seg} = { '' => $node->{$seg} } if ! ref $node->{$seg};
       }
     }
   );
