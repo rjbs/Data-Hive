@@ -76,6 +76,12 @@ sub test_existing_hive {
   my $passed = subtest $desc => sub {
     isa_ok($hive, 'Data::Hive');
 
+    is_deeply(
+      [ $hive->KEYS ],
+      [ ],
+      "we're starting with an empty hive",
+    );
+
     subtest 'value of one' => sub {
       ok(! $hive->one->EXISTS, "before being set, ->one doesn't EXISTS");
 
