@@ -300,7 +300,9 @@ sub KEYS {
 
 =head3 HIVE
 
-  $hive->HIVE('foo');   #  equivalent to $hive->foo
+  $hive->HIVE('foo');          #  equivalent to $hive->foo
+
+  $hive->HIVE('foo', 'bar');   #  equivalent to $hive->foo->bar
 
 This method returns a subhive of the current hive.  In most cases, it is
 simpler to use the lowercase hive access method.  This method is useful when
@@ -323,16 +325,16 @@ sub ITEM {
 }
 
 sub HIVE {
-  my ($self, $key) = @_;
+  my ($self, @keys) = @_;
 
-  if (! defined $key or ! length $key or ref $key) {
-    $key = '(undef)' unless defined $key;
-    Carp::croak "illegal hive path part: $key";
-  }
+  my @illegal = map  { $_ = '(undef)' if ! defined }
+                grep { ! defined or ! length or ref } @keys;
+
+  Carp::croak "illegal hive path parts: @illegal" if @illegal;
 
   return $self->NEW({
     %$self,
-    path => [ @{$self->{path}}, $key ],
+    path => [ @{$self->{path}}, @keys ],
   });
 }
 

@@ -1,6 +1,11 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+
+          allow ->HIVE to take multiple keys
+
+1.001     2010-08-31 08:27:03 America/New_York
+
           added ROOT, SAVE, SAVE_ALL, DELETE_ALL
 
           old Hash store is now Hash::Nested; added new, flat Hash store
