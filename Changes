@@ -1,6 +1,7 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+          add COPY_ONTO
 
 1.002     2010-08-31 22:48:54 America/New_York
 

@@ -298,6 +298,29 @@ sub KEYS {
   return $self->STORE->keys($self->{path});
 }
 
+=head3 COPY_ONTO
+
+  $hive->foo->COPY_ONTO( $another_hive->bar );
+
+This method copies all the existing values found at or under the current path
+to another Data::Hive, using either the same or a different store.
+
+Currently, this will set each found value individually.  In the future, store
+classes should have the ability to receive a bulk-set message to operate in a
+transaction, if appropriate.
+
+=cut
+
+sub COPY_ONTO {
+  my ($self, $target) = @_;
+
+  $target->SET( $self->GET ) if $self->EXISTS;
+
+  for my $key ($self->KEYS) {
+    $self->HIVE($key)->COPY_ONTO( $target->HIVE($key) );
+  }
+}
+
 =head3 HIVE
 
   $hive->HIVE('foo');          #  equivalent to $hive->foo

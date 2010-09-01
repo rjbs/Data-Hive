@@ -4,6 +4,7 @@ package Data::Hive::Test;
 # ABSTRACT: a bundle of tests for Data::Hive stores
 
 use Data::Hive;
+use Data::Hive::Store::Hash;
 
 use Test::More 0.94; # subtest
 
@@ -167,41 +168,61 @@ sub test_new_hive {
       "we can get back to the root easily with ROOT",
     );
 
-    $hive->doomed->alpha->branch->value->SET(1);
-    $hive->doomed->bravo->branch->value->SET(1);
+    subtest 'COPY_ONTO' => sub {
+      $hive->copy->x->y->z->SET(1);
+      $hive->copy->a->b->SET(2);
+      $hive->copy->a->b->c->d->SET(3);
 
-    is_deeply(
-      [ sort $hive->doomed->KEYS ],
-      [ qw(alpha bravo) ],
-      "created hive with two subhives",
-    );
+      my $target = Data::Hive->NEW({ store => Data::Hive::Store::Hash->new });
 
-    $hive->doomed->alpha->DELETE_ALL;
+      $hive->copy->COPY_ONTO($target->clone);
 
-    is_deeply(
-      [ sort $hive->doomed->KEYS ],
-      [ qw(bravo) ],
-      "doing a DELETE_ALL gets rid of all deeper values",
-    );
+      is_deeply(
+        $target->STORE->hash_store,
+        {
+          'clone.x.y.z'   => '1',
+          'clone.a.b'     => '2',
+          'clone.a.b.c.d' => '3',
+        },
+        "we can copy structures",
+      );
+    };
 
-    is(
-      $hive->doomed->alpha->branch->value->GET,
-      undef,
-      "the deeper value is now undef",
-    );
+    subtest 'DELETE_ALL' => sub {
+      $hive->doomed->alpha->branch->value->SET(1);
+      $hive->doomed->bravo->branch->value->SET(1);
 
-    ok(
-      ! $hive->doomed->alpha->branch->value->EXISTS,
-      "the deeper value does not exist",
-    );
+      is_deeply(
+        [ sort $hive->doomed->KEYS ],
+        [ qw(alpha bravo) ],
+        "created hive with two subhives",
+      );
 
-    is(
-      $hive->doomed->bravo->branch->value->GET,
-      1,
-      "the deep value on another branch is not gone",
-    );
+      $hive->doomed->alpha->DELETE_ALL;
 
-      $hive->doomed->bravo->branch->value->SET(1),
+      is_deeply(
+        [ sort $hive->doomed->KEYS ],
+        [ qw(bravo) ],
+        "doing a DELETE_ALL gets rid of all deeper values",
+      );
+
+      is(
+        $hive->doomed->alpha->branch->value->GET,
+        undef,
+        "the deeper value is now undef",
+      );
+
+      ok(
+        ! $hive->doomed->alpha->branch->value->EXISTS,
+        "the deeper value does not exist",
+      );
+
+      is(
+        $hive->doomed->bravo->branch->value->GET,
+        1,
+        "the deep value on another branch is not gone",
+      );
+    };
   };
 
   return $passed ? $hive : ();
