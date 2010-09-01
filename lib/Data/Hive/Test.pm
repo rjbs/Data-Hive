@@ -41,23 +41,39 @@ implementation.
 If the tests pass, the method will return the hive.  If they fail, the method
 will return false.
 
+=method test_existing_hive
+
+  Data::Hive::Test->test_existing_hive( $desc, $hive );
+
+This method behaves just like C<test_new_hive>, but expects a hive rather than
+arguments to use to build one.
+
 =cut
 
 sub test_new_hive {
   my ($self, $desc, $arg) = @_;
-  
+
   if (@_ == 2) {
     $arg  = $desc;
     $desc = "hive tests from Data::Hive::Test";
   }
 
+  my $hive = Data::Hive->NEW($arg);
+
+  test_existing_hive($desc, $hive);
+}
+
+sub test_existing_hive {
+  my ($self, $desc, $hive) = @_;
+
+  if (@_ == 2) {
+    $hive = $desc;
+    $desc = "hive tests from Data::Hive::Test";
+  }
+
   $desc = "Data::Hive::Test: $desc";
 
-  my $hive;
-
   my $passed = subtest $desc => sub {
-    $hive = Data::Hive->NEW($arg);
-
     isa_ok($hive, 'Data::Hive');
 
     subtest 'value of one' => sub {
