@@ -155,15 +155,74 @@ subtest 'start with existing old-style hash' => sub {
   my $hive  = Data::Hive->NEW({
     store_class => 'Hash::Nested',
     store_args  => [ {
-      foo => { bar => 10 },
+      to_get    => { bar => 10 },
+      to_exists => { bar => 10 },
+      to_delete => { bar => { baz => 10, quux => 20 } },
+      to_skip   => { bar => { baz => 10, quux => 20 } },
+      to_keys   => { bar => { baz => 10, quux => 20 } },
     } ],
   });
 
-  is($hive->foo->bar->GET, 10, 'we can access old-style hash stores');
+  is($hive->to_get->bar->GET, 10, 'we can GET from old-style hash stores');
 
   is_deeply(
-    $hive->STORE->hash_store,
-    { foo => { bar => { '' => 10 } } },
+    $hive->STORE->hash_store->{to_get},
+    { bar => { '' => 10 } },
+    "...and we auto-upgrade them in place",
+  );
+
+  ok($hive->to_exists->bar->EXISTS, 'we can EXISTS old-style hash stores');
+
+  is_deeply(
+    $hive->STORE->hash_store->{to_exists},
+    { bar => { '' => 10 } },
+    "...and we auto-upgrade them in place",
+  );
+
+  is(
+    $hive->to_delete->bar->baz->DELETE,
+    10,
+    'we can DELETE from old-style hash stores'
+  );
+
+  ok(
+    ! $hive->to_delete->bar->baz->EXISTS,
+    '...and the DELETE is effective',
+  );
+
+  is_deeply(
+    $hive->STORE->hash_store->{to_delete},
+    { bar => { quux => 20 } },
+    "...and we auto-upgrade them in place",
+  );
+
+  is(
+    $hive->to_skip->bar->baz->missing->whatever->DELETE,
+    undef,
+    "we can (fake) delete from a element past old-style non-ref",
+  );
+
+  is_deeply(
+    $hive->STORE->hash_store->{to_skip}{bar}{baz},
+    { '' => 10 },
+    "...and we auto-upgrade them in place",
+  );
+
+  is_deeply(
+    [ sort $hive->to_keys->bar->KEYS ],
+    [ qw(baz quux) ],
+    "we can get KEYS where the keys hold old-style scalar",
+  );
+
+  is_deeply(
+    [ sort $hive->to_keys->bar->baz->KEYS ],
+    [ ],
+    "we can get KEYS (empty) of a non-ref leaf",
+  );
+
+  is_deeply(
+    $hive->STORE->hash_store->{to_keys}{bar}{baz},
+    { '' => 10 },
     "...and we auto-upgrade them in place",
   );
 };

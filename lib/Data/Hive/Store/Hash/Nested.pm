@@ -168,6 +168,8 @@ sub exists {
       step => sub {
         my ($seg, $node) = @_;
         die $BREAK unless exists $node->{$seg};
+
+        $node->{$seg} = { '' => $node->{$seg} } if ! ref $node->{$seg};
       },
       end  => sub { return exists $_[0]->{''}; },
     },
@@ -184,11 +186,16 @@ sub delete {
       step => sub {
         my ($seg, $node) = @_;
         die $BREAK unless exists $node->{$seg};
+        $node->{$seg} = { '' => $node->{$seg} } if ! ref $node->{$seg};
         push @to_check, [ $node, $seg ];
       },
       cond => sub { @{ shift() } > 1 },
       end  => sub {
         my ($node, $final_path) = @_;
+
+        $node->{ $final_path->[0] } = { '' => $node->{ $final_path->[0] } }
+          unless ref $node->{ $final_path->[0] };
+
         my $this = $node->{ $final_path->[0] };
         my $rv = delete $this->{''};
 
@@ -217,6 +224,7 @@ sub keys {
     step => sub {
       my ($seg, $node) = @_;
       die $BREAK unless exists $node->{$seg};
+      $node->{$seg} = { '' => $node->{$seg} } if ! ref $node->{$seg};
     },
     end  => sub {
       return grep { length } keys %{ $_[0] };
