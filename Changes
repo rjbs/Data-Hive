@@ -1,6 +1,7 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+          require Test::More 0.96 so that we don't need plans in subtests
 
 1.006     2010-09-01 15:47:44 America/New_York
           Data::Hive::Test test suite can now be run against existing hives

@@ -6,7 +6,7 @@ package Data::Hive::Test;
 use Data::Hive;
 use Data::Hive::Store::Hash;
 
-use Test::More 0.94; # subtest
+use Test::More 0.96; # subtest without tests
 
 =head1 SYNOPSIS
 
