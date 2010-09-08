@@ -1,6 +1,8 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+
+1.007     2010-09-07 21:34:43 America/New_York
           require Test::More 0.96 so that we don't need plans in subtests
 
 1.006     2010-09-01 15:47:44 America/New_York
