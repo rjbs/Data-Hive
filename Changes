@@ -1,6 +1,8 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+
+1.008     2010-10-21 16:51:16 America/New_York
           add a warning when an autoloaded hive descender is given an arg
 
 1.007     2010-09-07 21:34:43 America/New_York
