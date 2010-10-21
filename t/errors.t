@@ -57,4 +57,18 @@ like(
   'all-caps method names are reserved',
 );
 
+{
+  my $hive = Data::Hive->NEW({ store_class => 'Hash' });
+
+  my @warnings;
+  {
+    local $SIG{__WARN__} = sub { push @warnings, @_ };
+    $hive->foo->bar(1)->baz->GET;
+  }
+
+  is(@warnings, 1, "we get a warning when passing args to hive descenders");
+  like($warnings[0], qr{arguments passed}, "...and it is what we expect");
+}
+
+
 done_testing;

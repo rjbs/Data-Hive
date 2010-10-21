@@ -1,6 +1,7 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+          add a warning when an autoloaded hive descender is given an arg
 
 1.007     2010-09-07 21:34:43 America/New_York
           require Test::More 0.96 so that we don't need plans in subtests

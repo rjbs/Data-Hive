@@ -441,6 +441,8 @@ sub AUTOLOAD {
     Carp::croak("all-caps method names are reserved: '$method'");
   }
 
+  Carp::cluck("arguments passed to autoloaded Data::Hive descender") if @_;
+
   return $self->HIVE($method);
 }
 
