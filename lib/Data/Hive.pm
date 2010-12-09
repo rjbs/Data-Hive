@@ -13,7 +13,7 @@ use Carp ();
 
   $hive->foo->bar->quux->SET(17);
 
-  print $hive->foo->bar->baz->quux->GET;  # 17
+  print $hive->foo->bar->quux->GET;  # 17
 
 =head1 DESCRIPTION
 
