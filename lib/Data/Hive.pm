@@ -173,8 +173,6 @@ sub NEW {
 The C<GET> method gets the hive value.  If there is no defined value at the
 path and a default has been supplied, the default will be returned instead.
 
-This method may also be called as C<GETSTR> or C<GETNUM> for backward
-compatibility, but this is deprecated and will be removed in a future release.
 
 =head4 overloading
 
@@ -201,16 +199,6 @@ sub GET {
   my ($self, $default) = @_;
   my $value = $self->STORE->get($self->{path});
   return defined $value ? $value : $default;
-}
-
-sub GETNUM {
-  Carp::carp "GETNUM method is deprecated";
-  shift->GET(@_);
-}
-
-sub GETSTR {
-  Carp::carp "GETSTR method is deprecated";
-  shift->GET(@_);
 }
 
 =head3 SET
