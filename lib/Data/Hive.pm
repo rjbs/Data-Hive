@@ -213,7 +213,11 @@ sub GET {
 
 This method sets (replacing, if necessary) the hive value.
 
-Its return value is not defined.
+Data::Hive was built to store simple scalars as values.  Although it
+I<probably> works just fine with references in the hive, it has not been
+tested for such use, and there may be bugs lurking in there.
+
+C<SET>'s return value is not defined.
 
 =cut
 
