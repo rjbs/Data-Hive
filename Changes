@@ -1,6 +1,8 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+
+1.009     2013-03-04 16:36:28 America/New_York
           add ->GET(sub{...}) for lazily computed default
 
           remove GETNUM, GETSTR
