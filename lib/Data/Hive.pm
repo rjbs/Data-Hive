@@ -173,6 +173,9 @@ sub NEW {
 The C<GET> method gets the hive value.  If there is no defined value at the
 path and a default has been supplied, the default will be returned instead.
 
+C<$default> should be a simple scalar or a subroutine.  If C<$default> is a
+subroutine, it will be called to compute the default only if needed.  The
+behavior for other types of defaults is undefined.
 
 =head4 overloading
 
@@ -198,7 +201,10 @@ use overload (
 sub GET {
   my ($self, $default) = @_;
   my $value = $self->STORE->get($self->{path});
-  return defined $value ? $value : $default;
+  return defined $value     ? $value
+       : ! defined $default ? undef
+       : ref $default       ? $default->()
+       :                      $default;
 }
 
 =head3 SET

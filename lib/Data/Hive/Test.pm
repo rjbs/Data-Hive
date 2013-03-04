@@ -91,6 +91,8 @@ sub test_existing_hive {
 
       is($hive->one->GET,      1, "->one->GET is 1");
       is($hive->one->GET(10),  1, "->one->GET(10) is 1");
+
+      is($hive->one->GET(sub { 2 }),  1, "->one->GET(sub{2}) is 1");
     };
 
     subtest 'value of zero' => sub {
@@ -122,8 +124,9 @@ sub test_existing_hive {
 
       ok($hive->undef->EXISTS, "after being set, ->undef EXISTS");
 
-      is($hive->undef->GET,     undef, "->undef->GET is undef");
-      is($hive->undef->GET(10),    10, "->undef->GET(10) is undef");
+      is($hive->undef->GET,      undef, "->undef->GET is undef");
+      is($hive->undef->GET(10),     10, "->undef->GET(10) is 10");
+      is($hive->undef->GET(sub{2}),  2, "->undef->GET(sub{2}) is 2");
     };
 
     subtest 'non-existing value' => sub {
@@ -134,6 +137,7 @@ sub test_existing_hive {
       ok(! $hive->missing->EXISTS, "mere GET-ing won't cause ->missing to EXIST");
 
       is($hive->missing->GET(10),  10, "->missing->GET(10) is 10");
+      is($hive->missing->GET(sub{2}), 2, "->missing->GET(sub{2}) is 2");
     };
 
     subtest 'nested value' => sub {
