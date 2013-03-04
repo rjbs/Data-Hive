@@ -1,6 +1,9 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+          add ->GET(sub{...}) for lazily computed default
+
+          remove GETNUM, GETSTR
 
 1.008     2010-10-21 16:51:16 America/New_York
           add a warning when an autoloaded hive descender is given an arg
