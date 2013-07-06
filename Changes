@@ -2,6 +2,9 @@ Revision history for Data-Hive
 
 {{$NEXT}}
 
+1.010     2013-07-05 21:34:32 America/New_York
+          repackage, update bugtracker
+
 1.009     2013-03-04 16:36:28 America/New_York
           add ->GET(sub{...}) for lazily computed default
 
