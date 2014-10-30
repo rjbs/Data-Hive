@@ -214,6 +214,29 @@ sub test_existing_hive {
       );
     };
 
+    subtest 'DELETE' => sub {
+      $hive->to_delete->top->SET(10);
+      $hive->to_delete->top->middle->SET(20);
+      $hive->to_delete->top->middle->bottom->SET(20);
+
+      $hive->to_delete->top->middle->DELETE;
+
+      ok(
+        $hive->to_delete->top->EXISTS,
+        "delete middle, top is still there",
+      );
+
+      ok(
+        ! $hive->to_delete->top->middle->EXISTS,
+        "delete middle, so it is gone",
+      );
+
+      ok(
+        $hive->to_delete->top->middle->bottom->EXISTS,
+        "delete middle, bottom is still there",
+      );
+    };
+
     subtest 'DELETE_ALL' => sub {
       $hive->doomed->alpha->branch->value->SET(1);
       $hive->doomed->bravo->branch->value->SET(1);

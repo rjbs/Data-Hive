@@ -1,6 +1,7 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+        - extend Data::Hive::Test to cover DELETE, not just DELETE_ALL
 
 1.011     2013-12-13 08:24:44 America/New_York
           update bugtracker and repo links
