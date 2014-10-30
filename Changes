@@ -1,6 +1,8 @@
 Revision history for Data-Hive
 
 {{$NEXT}}
+
+1.012     2014-10-30 18:33:12-04:00 America/New_York
         - extend Data::Hive::Test to cover DELETE, not just DELETE_ALL
 
 1.011     2013-12-13 08:24:44 America/New_York
