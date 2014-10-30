@@ -1,8 +1,9 @@
 use strict;
 use warnings;
 package Data::Hive::Store::Hash::Nested;
-use base 'Data::Hive::Store';
 # ABSTRACT: store a hive in nested hashrefs
+
+use parent 'Data::Hive::Store';
 
 =head1 DESCRIPTION
 

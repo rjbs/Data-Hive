@@ -1,8 +1,9 @@
 use strict;
 use warnings;
 package Data::Hive::PathPacker::Strict;
-use base 'Data::Hive::PathPacker';
 # ABSTRACT: a simple, strict path packer
+
+use parent 'Data::Hive::PathPacker';
 
 use Carp ();
 

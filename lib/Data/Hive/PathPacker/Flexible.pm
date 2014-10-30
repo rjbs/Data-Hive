@@ -1,8 +1,9 @@
 use strict;
 use warnings;
 package Data::Hive::PathPacker::Flexible;
-use base 'Data::Hive::PathPacker';
 # ABSTRACT: a path packer that can be customized with callbacks
+
+use parent 'Data::Hive::PathPacker';
 
 =head1 DESCRIPTION
 

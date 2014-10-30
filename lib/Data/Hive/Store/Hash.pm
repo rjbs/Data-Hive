@@ -1,8 +1,9 @@
 use strict;
 use warnings;
 package Data::Hive::Store::Hash;
-use base 'Data::Hive::Store';
 # ABSTRACT: store a hive in a flat hashref
+
+use parent 'Data::Hive::Store';
 
 =head1 DESCRIPTION
 

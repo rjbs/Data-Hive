@@ -1,8 +1,9 @@
 use strict;
 use warnings;
 package Data::Hive::Store::Param;
-use base 'Data::Hive::Store';
 # ABSTRACT: CGI::param-like store for Data::Hive
+
+use parent 'Data::Hive::Store';
 
 =head1 DESCRIPTION
 
