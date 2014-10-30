@@ -102,7 +102,6 @@ sub delete {
 sub keys {
   my ($self, $path) = @_;
 
-  my $method = $self->{method};
   my @names  = keys %{ $self->hash_store };
 
   my %is_key;
