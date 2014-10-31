@@ -46,6 +46,10 @@ Returns true if the given path exists in the store.
 
 Delete the given path from the store.  Return the previous value, if any.
 
+Stores can also implement C<delete_all> to delete this path and all paths below
+it.  If C<delete_all> is not provided, the generic one-by-one delete in this
+class will be used.
+
 =head2 keys
 
   my @keys = $store->keys(\@path, \%opt);
