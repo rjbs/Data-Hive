@@ -63,6 +63,12 @@ sub test_new_hive {
   test_existing_hive($desc, $hive);
 }
 
+sub _set_ok {
+  my ($hive, $value) = @_;
+  local $Test::Builder::Level = $Test::Builder::Level + 1;
+  is($hive->SET($value), $value, "we return new value from SET");
+}
+
 sub test_existing_hive {
   my ($self, $desc, $hive) = @_;
 
@@ -85,7 +91,7 @@ sub test_existing_hive {
     subtest 'value of one' => sub {
       ok(! $hive->one->EXISTS, "before being set, ->one doesn't EXISTS");
 
-      $hive->one->SET(1);
+      _set_ok($hive->one, 1);
 
       ok($hive->one->EXISTS, "after being set, ->one EXISTS");
 
@@ -98,7 +104,7 @@ sub test_existing_hive {
     subtest 'value of zero' => sub {
       ok(! $hive->zero->EXISTS, "before being set, ->zero doesn't EXISTS");
 
-      $hive->zero->SET(0);
+      _set_ok($hive->zero, 0);
 
       ok($hive->zero->EXISTS, "after being set, ->zero EXISTS");
 
@@ -109,7 +115,7 @@ sub test_existing_hive {
     subtest 'value of empty string' => sub {
       ok(! $hive->empty->EXISTS, "before being set, ->empty doesn't EXISTS");
 
-      $hive->empty->SET('');
+      _set_ok($hive->empty, '');
 
       ok($hive->empty->EXISTS, "after being set, ->empty EXISTS");
 
@@ -120,7 +126,7 @@ sub test_existing_hive {
     subtest 'undef, existing value' => sub {
       ok(! $hive->undef->EXISTS, "before being set, ->undef doesn't EXISTS");
 
-      $hive->undef->SET(undef);
+      _set_ok($hive->undef, undef);
 
       ok($hive->undef->EXISTS, "after being set, ->undef EXISTS");
 
@@ -157,7 +163,7 @@ sub test_existing_hive {
         "before being set, ->two->deep is undef"
       );
 
-      $hive->two->deep->SET('2D');
+      _set_ok($hive->two->deep, '2D');
 
       ok(
         ! $hive->two->EXISTS,
@@ -195,9 +201,9 @@ sub test_existing_hive {
     );
 
     subtest 'COPY_ONTO' => sub {
-      $hive->copy->x->y->z->SET(1);
-      $hive->copy->a->b->SET(2);
-      $hive->copy->a->b->c->d->SET(3);
+      _set_ok( $hive->copy->x->y->z, 1);
+      _set_ok( $hive->copy->a->b, 2);
+      _set_ok( $hive->copy->a->b->c->d, 3);
 
       my $target = Data::Hive->NEW({ store => Data::Hive::Store::Hash->new });
 
@@ -215,9 +221,9 @@ sub test_existing_hive {
     };
 
     subtest 'DELETE' => sub {
-      $hive->to_delete->top->SET(10);
-      $hive->to_delete->top->middle->SET(20);
-      $hive->to_delete->top->middle->bottom->SET(20);
+      _set_ok($hive->to_delete->top, 10);
+      _set_ok($hive->to_delete->top->middle, 20);
+      _set_ok($hive->to_delete->top->middle->bottom, 20);
 
       $hive->to_delete->top->middle->DELETE;
 
@@ -238,8 +244,8 @@ sub test_existing_hive {
     };
 
     subtest 'DELETE_ALL' => sub {
-      $hive->doomed->alpha->branch->value->SET(1);
-      $hive->doomed->bravo->branch->value->SET(1);
+      _set_ok($hive->doomed->alpha->branch->value, 1);
+      _set_ok($hive->doomed->bravo->branch->value, 1);
 
       is_deeply(
         [ sort $hive->doomed->KEYS ],
