@@ -2,6 +2,9 @@ Revision history for Data-Hive
 
 {{$NEXT}}
 
+1.013     2015-12-08 17:52:33-05:00 America/New_York
+        - add Data::Hive::Test assertions that SET returns new value
+
 1.012     2014-10-30 18:33:12-04:00 America/New_York
         - extend Data::Hive::Test to cover DELETE, not just DELETE_ALL
 
