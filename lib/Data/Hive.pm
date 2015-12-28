@@ -203,7 +203,7 @@ sub GET {
   my $value = $self->STORE->get($self->{path});
   return defined $value     ? $value
        : ! defined $default ? undef
-       : ref $default       ? $default->()
+       : ref $default       ? scalar $default->()
        :                      $default;
 }
 
