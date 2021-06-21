@@ -2,6 +2,8 @@ Revision history for Data-Hive
 
 {{$NEXT}}
         - always call callback for ->GET($callback) in scalar context
+        - update author contact information
+        - add perl support data to docs
 
 1.013     2015-12-08 17:52:33-05:00 America/New_York
         - add Data::Hive::Test assertions that SET returns new value
